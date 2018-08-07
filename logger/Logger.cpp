@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
 #include "TimeStamp.hh"
@@ -43,15 +44,33 @@ class T
   const unsigned m_len;
 };
 
+void defaultOutput(const char *msg, int len){
+	size_t n = fwrite(msg, 1, len, stdout);
+	(void)n;
+}
+
+void defaultFlush(){
+	fflush(stdout);
+}
+
+Logger::outputFunc g_output = defaultOutput;
+Logger::flushFunc g_flush = defaultFlush;
 
 Logger::Logger(SourceFile file, int line, LogLevel level, const char* func)
   : m_impl(level, 0, file, line)
 {
-  m_impl.m_stream << func << ' ';
+  m_impl.m_stream << func << ':';
 }
 
 Logger::~Logger(){
 	m_impl.finish();
+	const LogStream::Buffer& buf(stream().buffer());
+	g_output(buf.data(), buf.length());
+	if (m_impl.m_level == FATAL)
+	{
+		g_flush();
+		abort();
+	}
 }
 
 Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile& file, int line)
@@ -71,7 +90,7 @@ Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile& file, int li
 
 void Logger::Impl::finish()
 {
-  m_stream << " - " << m_fileBaseName.m_data << ':' << m_line << '\n';
+	m_stream << " - " << m_fileBaseName.m_data << ":" << m_line << "\n";
 }
 
 void Logger::Impl::formatTime()

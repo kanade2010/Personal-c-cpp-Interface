@@ -83,7 +83,15 @@ public:
 
 	LogStream& stream() { return m_impl.m_stream; }
 
+	typedef void (*outputFunc)(const char *msg, int len);
+	typedef void (*flushFunc)();
+
+	static void setOutput(outputFunc);
+	static void setFlush(flushFunc);
+
 private:
+	Logger(const Logger &lg);			//no copyable
+	Logger& operator=(const Logger &lg);
 
 	class Impl
 	{

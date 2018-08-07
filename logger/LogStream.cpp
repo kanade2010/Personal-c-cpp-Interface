@@ -3,11 +3,14 @@
 #include <algorithm>
 #include "LogStream.hh"
 
+LogStream::LogStream(){
+}
+
+LogStream::~LogStream(){
+}
+
 LogStream& LogStream::operator<<(bool v){
-	if(v)
-		m_buffer.append("true", 4);
-	else
-		m_buffer.append("false", 5);
+	m_buffer.append(v ? "1" : "0", 1);
 	return *this;
 }
 
@@ -60,7 +63,7 @@ LogStream& LogStream::operator<<(unsigned long long v)
 }
 
 LogStream& LogStream::operator<<(const void*){
-	printf("undefine");
+	printf("undefine\n");
 }
 
 LogStream& LogStream::operator<<(float v)
@@ -70,15 +73,26 @@ LogStream& LogStream::operator<<(float v)
   }
 
 LogStream& LogStream::operator<<(double v){
-	printf("%lf", v);
+	if(m_buffer.avail() >= kMaxNumericSize){
+		int len = snprintf(m_buffer.current(), kMaxNumericSize, "%.12g", v);
+		m_buffer.add(len);
+	}
+	return *this;
 }
 
 LogStream& LogStream::operator<<(char v){
-	printf("%c", v);
+	m_buffer.append(&v, 1);
+	return *this;
 }
 
-LogStream& LogStream::operator<<(const char *v){
-	printf("%s", v);
+LogStream& LogStream::operator<<(const char *str){
+	if(str){
+		m_buffer.append(str, strlen(str));
+	}else{
+		m_buffer.append("(NULL)", 6);
+	}
+
+	return *this;
 }
 
 const char digits[] = "9876543210123456789";

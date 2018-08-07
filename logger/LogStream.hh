@@ -14,7 +14,7 @@ public:
 	}
 
 	~LogBuffer(){
-		printf("%s\n", m_data);
+		//printf("%s", m_data);
 	}
 
 	void append(const char* /*restrict*/ buf, size_t len){
@@ -28,13 +28,14 @@ public:
 
 	// write in m_data directly
 	char* current() {  return m_cur; };
-	int avail() const { return static_cast<int> (m_cur - m_data); }
+	int avail() const { return static_cast<int> (end() - m_cur); }
 	void add(size_t len) { m_cur += len; }
+	int length() const {return m_cur - m_data;}
 
 	const char* data() const { return m_data; }
 
 private:
-	const char* end() const { return m_data + szieof(m_data); }
+	const char* end() const { return m_data + sizeof(m_data); }
 
 	char m_data[SIZE];
 	char* m_cur;
@@ -42,6 +43,9 @@ private:
 
 class LogStream{
 public:
+	LogStream();
+	~LogStream();
+
 	typedef LogBuffer<kSmallBuffer> Buffer;
 	typedef LogStream self;
 	self& operator<<(bool v);
@@ -64,6 +68,11 @@ public:
 	self& operator<<(const char *);
 
 	void append(const char* data, int len) { return m_buffer.append(data, len); }
+	const Buffer& buffer() const { return m_buffer; }
+
+private:
+	LogStream(const LogStream& ls);			//no copyable
+	LogStream& operator=(const LogStream& ls);
 
 	template<typename T>
 	void formatInteger(T v);
