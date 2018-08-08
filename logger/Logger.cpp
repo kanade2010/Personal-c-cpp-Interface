@@ -3,11 +3,19 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 #include "TimeStamp.hh"
 #include "Logger.hh"
 
 __thread char t_time[64];
 __thread time_t t_lastSecond;
+__thread char t_errnobuf[512];
+
+const char* strerror_tl(int savedErrno)
+{
+  return strerror_r(savedErrno, t_errnobuf, sizeof(t_errnobuf));
+}
 
 Logger::LogLevel g_logLevel = Logger::INFO;
 
@@ -21,12 +29,12 @@ Logger::LogLevel Logger::logLevel(){
 
 const char* LogLevelName[Logger::NUM_LOG_LEVELS] =
 {
-	"TRACE ",
-	"DEBUG ",
-	"INFO  ",
-	"WARN  ",
-	"ERROR ",
-	"FATAL ",
+	"[TRACE]",
+	"[DEBUG]",
+	"[INFO ]",
+	"[WARN ]",
+	"[ERROR]",
+	"[FATAL]",
 };
 
 // helper class for known string length at compile time
@@ -56,10 +64,21 @@ void defaultFlush(){
 Logger::outputFunc g_output = defaultOutput;
 Logger::flushFunc g_flush = defaultFlush;
 
+Logger::Logger(SourceFile file, int line)
+	: m_impl(INFO, 0, file, line){
+}
+
+Logger::Logger(SourceFile file, int line, LogLevel level)
+	: m_impl(level, 0, file, line){
+}
+
+Logger::Logger(SourceFile file, int line, bool toAbort)
+	: m_impl(toAbort? FATAL:ERROR, errno, file, line){
+}
+
 Logger::Logger(SourceFile file, int line, LogLevel level, const char* func)
-  : m_impl(level, 0, file, line)
-{
-  m_impl.m_stream << func << ':';
+	: m_impl(level, 0, file, line){
+	m_impl.m_stream << '[' << func << "] ";
 }
 
 Logger::~Logger(){
@@ -73,7 +92,7 @@ Logger::~Logger(){
 	}
 }
 
-Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile& file, int line)
+Logger::Impl::Impl(LogLevel level, int savedErrno, const SourceFile& file, int line)
 	: m_time(TimeStamp::now()),
 	  m_stream(),
 	  m_level(level),
@@ -82,15 +101,16 @@ Logger::Impl::Impl(LogLevel level, int old_errno, const SourceFile& file, int li
 {
 	formatTime();
 	m_stream << LogLevelName[level] << ' ';
-  /*if (savedErrno != 0)
-  {
-    stream_ << strerror_tl(savedErrno) << " (errno=" << savedErrno << ") ";
-  }*/
+	m_stream << '[' << m_fileBaseName.m_data << ':' << m_line << "] ";
+	if (savedErrno != 0)
+	{
+		m_stream << strerror_tl(savedErrno) << " (errno=" << savedErrno << ") ";
+	}
 }
 
 void Logger::Impl::finish()
 {
-	m_stream << " - " << m_fileBaseName.m_data << ":" << m_line << "\n";
+	m_stream<< '\n';
 }
 
 void Logger::Impl::formatTime()
@@ -104,10 +124,10 @@ void Logger::Impl::formatTime()
 
 		::gmtime_r(&seconds, &tm_time); // FIXME TimeZone::fromUtcTime
 
-		int len = snprintf(t_time, sizeof(t_time), "%4d%02d%02d %02d:%02d:%02d",
+		int len = snprintf(t_time, sizeof(t_time), "%4d-%02d-%02d %02d:%02d:%02d",
 		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
 		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
-		assert(len == 17); (void)len;
+		assert(len == 19); (void)len;
 	}
 
 	Fmt us(".%06d ", microseconds);

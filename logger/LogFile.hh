@@ -1,5 +1,5 @@
-#ifndef _LOG_FILE_H
-#define _LOG_FILE_H
+#ifndef _LOG_FILE_HH
+#define _LOG_FILE_HH
 #include <string>
 #include "ScopePtr.hh"
 #include "MutexLock.hh"

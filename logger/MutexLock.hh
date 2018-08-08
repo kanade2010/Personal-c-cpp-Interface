@@ -18,7 +18,10 @@ public:
 	}
 
 private:
-	friend class Condition;//是condition类可以调用restoreMutexStatus();
+	MutexLock(MutexLock&);	//no copyable
+	MutexLock& operator=(const MutexLock&);
+
+	friend class Condition;//使condition类可以调用restoreMutexStatus();
 
 	void restoreMutexStatus(){
 		m_isLocking = true;

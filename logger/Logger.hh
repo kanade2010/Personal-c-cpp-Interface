@@ -26,8 +26,7 @@
 	Logger(__FILE__, __LINE__, Logger::DEBUG, __func__).stream()
 #define LOG_INFO if (Logger::logLevel() <= Logger::INFO) \
 	Logger(__FILE__, __LINE__).stream()
-//#define LOG_WARN Logger(__FILE__, __LINE__, Logger::WARN).stream()
-#define LOG_WARN Logger(__FILE__, __LINE__, Logger::WARN, __func__).stream()
+#define LOG_WARN Logger(__FILE__, __LINE__, Logger::WARN).stream()
 #define LOG_ERROR Logger(__FILE__, __LINE__, Logger::ERROR).stream()
 #define LOG_FATAL Logger(__FILE__, __LINE__, Logger::FATAL).stream()
 #define LOG_SYSERR Logger(__FILE__, __LINE__, false).stream()
@@ -75,7 +74,10 @@ public:
 		int m_size;
 	};
 
+	Logger(SourceFile file, int line);
+	Logger(SourceFile file, int line, LogLevel level);
 	Logger(SourceFile file, int line, LogLevel level, const char* func);
+	Logger(SourceFile file, int line, bool toAbort);
 	~Logger();
 
 	static void setLogLevel(LogLevel level);
