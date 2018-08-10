@@ -1,7 +1,7 @@
 #ifndef _LOG_FILE_HH
 #define _LOG_FILE_HH
 #include <string>
-#include "ScopePtr.hh"
+#include "scoped_ptr.hh"
 #include "MutexLock.hh"
 
 namespace FileUtil{

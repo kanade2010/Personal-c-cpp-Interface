@@ -64,6 +64,14 @@ void defaultFlush(){
 Logger::outputFunc g_output = defaultOutput;
 Logger::flushFunc g_flush = defaultFlush;
 
+void Logger::setOutput(outputFunc out){
+	g_output = out;
+}
+
+void Logger::setFlush(flushFunc flush){
+	g_flush = flush;
+}
+
 Logger::Logger(SourceFile file, int line)
 	: m_impl(INFO, 0, file, line){
 }

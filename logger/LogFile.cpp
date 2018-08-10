@@ -26,7 +26,7 @@ void LogFile::append(const char* logline, int len){
 void LogFile::append_unlocked(const char* logline, int len){
 	m_file->append(logline, len);
 
-	if(m_file->writtenBytes() > m_roolSize){
+	if(m_file->writtenBytes() > m_roolSize){printf("\nwb+++2%lu\n", m_file->writtenBytes());
 		rollFile();
 	}
 }

@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-const int kSmallBuffer = 2048;
-const int kLargeBuffer = 2048*1000;
+const int kSmallBuffer = 4096;
+const int kLargeBuffer = 4096;
 
 template<int SIZE>
 class LogBuffer

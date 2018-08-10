@@ -26,7 +26,7 @@ $(TARGET) : $(OBJ)
 
 %.o : %.cpp
 	@echo "Compiling" $< "..."
-	$(CC) $(CFLAGS) -c $^ -o $@ $(LIB)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(LIB) -std=c++11
 	@echo "Compiling" $@ "end\n"
 
 .PHONY: clean

@@ -1,10 +1,21 @@
-#include "ScopePtr.hh"
+#include "scoped_ptr.hh"
 #include "Logger.hh"
 #include "LogStream.hh"
 #include "FileUtil.hh"
 #include "LogFile.hh"
 #include "AsyncLogging.hh"
+#include "TimeStamp.hh"
 #include <errno.h>
+
+const off_t kRollSize = 2048*1000;
+
+AsyncLogging* g_asynclog = NULL;
+
+void asyncOutput(const char* logline, int len){
+	g_asynclog->append(logline, len);
+}
+
+
 
 int main(){
 
@@ -33,7 +44,7 @@ int main(){
 	//AsyncLogging alog("2131", 12345);
 
 //Log stdout test
-
+/*
 	short it1=1;
 	unsigned it2=2;
 	int it3 =-3;
@@ -73,6 +84,50 @@ int main(){
 
 	//abort()
 	//LOG_SYSFATAL << " just Test SF";
+*/
+
+	//AsyncLogging Test
+	AsyncLogging log("./test.log", kRollSize);
+	log.start();
+	g_asynclog = &log;
+
+	Logger::setOutput(asyncOutput);
+
+{
+
+		TimeStamp m_time(TimeStamp::now());
+		int64_t microSecondsSinceEpoch = m_time.microSecondsSinceEpoch();
+		time_t seconds = static_cast<time_t>(microSecondsSinceEpoch / TimeStamp::kMicroSecondsPerSecond);
+		int microseconds = static_cast<int>(microSecondsSinceEpoch % TimeStamp::kMicroSecondsPerSecond);
+		struct tm tm_time;
+
+		::gmtime_r(&seconds, &tm_time); // FIXME TimeZone::fromUtcTime
+
+		int len = printf("%4d-%02d-%02d %02d:%02d:%02d",
+		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
+}
+
+	for (int i = 0; i < 100; ++i){
+
+		LOG_INFO << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
+
+	}
+
+
+{
+		TimeStamp m_time(TimeStamp::now());
+		int64_t microSecondsSinceEpoch = m_time.microSecondsSinceEpoch();
+		time_t seconds = static_cast<time_t>(microSecondsSinceEpoch / TimeStamp::kMicroSecondsPerSecond);
+		int microseconds = static_cast<int>(microSecondsSinceEpoch % TimeStamp::kMicroSecondsPerSecond);
+		struct tm tm_time;
+
+		::gmtime_r(&seconds, &tm_time); // FIXME TimeZone::fromUtcTime
+
+		int len = printf("%4d-%02d-%02d %02d:%02d:%02d",
+		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
+}
 
 	getchar();
 
