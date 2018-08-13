@@ -47,6 +47,7 @@ public:
 	};
 	enum LogType
 	{
+		NONE,
 		PLATFORM,
 		COM,
 		RUN,
@@ -80,7 +81,7 @@ public:
 		int m_size;
 	};
 
-	//Logger(SourceFile file, int line, LogLevel level, LogType);
+	Logger(SourceFile file, int line, LogLevel level, LogType logtype);
 	Logger(SourceFile file, int line);
 	Logger(SourceFile file, int line, LogLevel level);
 	Logger(SourceFile file, int line, LogLevel level, const char* func);
@@ -93,9 +94,11 @@ public:
 	LogStream& stream() { return m_impl.m_stream; }
 
 	typedef void (*outputFunc)(const char *msg, int len);
+	typedef void (*outputWithType)(const char *msg, int len, LogType logtype);
 	typedef void (*flushFunc)();
 
 	static void setOutput(outputFunc);
+	static void setOutputWithType(outputWithType);
 	static void setFlush(flushFunc);
 
 private:
@@ -118,7 +121,7 @@ private:
 	};
 
 	Impl m_impl;
-
+	LogType m_logtype;
 };
 
 #endif

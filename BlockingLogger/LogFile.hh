@@ -11,16 +11,17 @@ namespace FileUtil{
 class LogFile
 {
 public:
-	LogFile(const std::string& filePath, off_t rollSize = 2048*1000, bool threadSafe = true, int flushInterval = 3);
+	LogFile(const std::string& filePath, off_t rollSize = 2048*1000, bool threadSafe = true, int flushInterval = 0);
 	~LogFile();
 
 	void append(const char* logline, int len);
 	void flush();
 
-	std::string getlogFileName(const std::string& baseName, int suffix);
+	std::string getlogFileName(const std::string& baseName);
 
 private:
 	void append_unlocked(const char* logline, int len);
+	void checkLogNum();
 
 	//static std::string getlogFileName(const std::string& filePath);
 	bool rollFile();

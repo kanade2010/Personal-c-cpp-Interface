@@ -34,3 +34,5 @@ $(TARGET) : $(OBJ)
 clean:
 	rm -rf $(OBJOUT)*.o $(EXEOUT)$(TARGET)
 	rm -rf test.log*
+	rm -rf *.log
+	rm -rf *.log.*

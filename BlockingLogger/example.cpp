@@ -6,14 +6,20 @@
 #include "BlockingLog.hh"
 #include "TimeStamp.hh"
 #include <errno.h>
+#include <unistd.h>
 
-const off_t kRollSize = 2048;
+const off_t kRollSize = 2048*100;
 
 BlockingLog* g_blockingLog = NULL;
 
-void blockingOutput(const char* logline, int len){
-	g_blockingLog->append(logline, len);
+void blockingOutputWithType(const char* logline, int len, Logger::LogType logtype){
+	g_blockingLog->append(logline, len, logtype);
 }
+
+#define PLOG_WARN Logger(__FILE__, __LINE__, Logger::WARN, Logger::PLATFORM).stream()
+#define CLOG_DEBUG Logger(__FILE__, __LINE__, Logger::DEBUG, Logger::COM).stream()
+#define RLOG_TRACE Logger(__FILE__, __LINE__, Logger::TRACE, Logger::RUN).stream()
+
 
 int main(){
 
@@ -53,7 +59,7 @@ int main(){
 	bool bt2 = true;
 	char *pt1 = NULL;
 	char *pt2 = (char *)"abcdefg";
-
+/*
 	printf("(%d  %d %d)\n", Logger::TRACE, Logger::DEBUG, Logger::logLevel());
 	Logger::setLogLevel(Logger::TRACE);
 	printf("(%d  %d %d)\n", Logger::TRACE, Logger::DEBUG, Logger::logLevel());
@@ -82,13 +88,17 @@ int main(){
 
 	//abort()
 	//LOG_SYSFATAL << " just Test SF";
-
-	LOG_DEBUG << "test to write in ./test.log";
+	LOG_DEBUG << "test to write in ./test.log";*/
 	//BlockingLog Test
-	BlockingLog log("./test.log", kRollSize);
+	BlockingLog log("./platform.log", "./com.log", "./run.log", kRollSize);
 	g_blockingLog = &log;
 
-	Logger::setOutput(blockingOutput);
+	Logger::setOutputWithType(blockingOutputWithType);
+
+	PLOG_WARN << "test outputWithType PLATFORM\n";
+	CLOG_DEBUG << "test outputWithType COM\n";
+	RLOG_TRACE << "test outputWithType RUN\n";
+
 
 {
 
@@ -104,12 +114,17 @@ int main(){
 		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
 		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
 }
+	for(int j = 0 ; j < 6 ; ++j){
+	for (int i = 0; i < 20000; ++i){
 
-	for (int i = 0; i < 1000; ++i){
-
-		LOG_INFO << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
+		PLOG_WARN << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
+		CLOG_DEBUG << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
+		RLOG_TRACE << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
 
 	}
+	printf("sleep 1\n");
+	sleep(1);
+}
 
 
 {

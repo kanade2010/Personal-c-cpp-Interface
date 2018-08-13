@@ -1,5 +1,10 @@
 #include "LogFile.hh"
 #include "FileUtil.hh"
+#include <time.h>
+#include <string.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <assert.h>
 
 LogFile::LogFile(const std::string& filePath, off_t rollSize, bool threadSafe, int flushInterval)
 	:m_filePath(filePath),
@@ -43,38 +48,100 @@ void LogFile::flush(){
 }
 
 bool LogFile::rollFile(){
-	std::string fileNameOld;
 	std::string fileNameNew;
 
-	for(int i = m_rollCnt; i >= 0; --i ){
-		fileNameOld = getlogFileName(m_filePath, i);
-		fileNameNew = getlogFileName(m_filePath, i + 1);
-		::rename(fileNameOld.c_str(), fileNameNew.c_str());
-		if(i == 4) ::remove(fileNameNew.c_str());
-	}
+	fileNameNew = getlogFileName(m_filePath);
 
-	m_file.reset(new FileUtil::AppendFile(m_filePath));
+	m_file.reset(new FileUtil::AppendFile(fileNameNew));
 
-	if(m_rollCnt < 4)
-		m_rollCnt++;
+	checkLogNum();
+
 	return true;
 }
 
-std::string LogFile::getlogFileName(const std::string& baseName, int suffix){
+std::string LogFile::getlogFileName(const std::string& baseName){
 	std::string fileName;
-	fileName.reserve(baseName.size() + 3);
-	fileName = baseName;
+	fileName.reserve(baseName.size() + 32);
+	fileName = baseName.substr(0, baseName.rfind("."));
 
-	char tmp[4];
-	if(suffix != 0)
-		snprintf(tmp, sizeof(tmp), ".%1d", suffix);
+	char timebuf[24];
+	struct tm tm;
+	time_t now = time(NULL);
+	gmtime_r(&now, &tm);
+	strftime(timebuf, sizeof(timebuf), ".%Y%m%d-%H%M%S", &tm);
+	fileName += timebuf;
+	fileName += ".log";
 
-	fileName += tmp;
 	return fileName;
 }
 
+void LogFile::checkLogNum(){
+	char name[] = "./";
+	char str[32] = {0};
+	//把目录路径存放在字符数组内
+	strcpy(str, name);
+	//打开目录
+	DIR *dir = opendir(str);
+	assert(NULL != dir);
 
+	int rcnt = 0;
+	int pcnt = 0;
+	int ccnt = 0;
+	char rlog[64] = "\0";
+	char plog[64] = "\0";
+	char clog[64] = "\0";
+	struct dirent *ent = readdir(dir);
+    while(NULL != ent)
+    {
+        if(8 == ent->d_type)
+        {
+ 			if(strncmp("run", ent->d_name, 3) == 0){
+ 				if(strncmp(ent->d_name, rlog, 19) < 0){
+ 					strcpy(rlog, ent->d_name);
+ 				}
 
+ 				rcnt++;
+ 			}
+ 			if(strncmp("pla", ent->d_name, 3) == 0){
+ 				if(strncmp(ent->d_name, plog, 24) < 0){
+ 					strcpy(plog, ent->d_name);
+ 				}
+
+ 				pcnt++;
+ 			}
+ 			if(strncmp("com", ent->d_name, 3) == 0){
+ 				if(strncmp(ent->d_name, clog, 19) < 0){
+ 					strcpy(clog, ent->d_name);
+ 				}
+
+ 				ccnt++;
+ 			}
+        }
+        ent = readdir(dir);
+    }
+    closedir(dir);
+
+	if(rcnt > 4){
+		char filename[64] = "\0";
+		strcat(filename, name);
+		strcat(filename, rlog);
+		unlink(filename);
+	}
+
+	if(ccnt > 4){
+		char filename[64] = "\0";
+		strcat(filename, name);
+		strcat(filename, clog);
+		unlink(filename);
+	}
+
+	if(pcnt > 4){
+		char filename[64] = "\0";
+		strcat(filename, name);
+		strcat(filename, plog);
+		unlink(filename);
+	}
+}
 
 
 
