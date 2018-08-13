@@ -87,9 +87,9 @@ void LogFile::checkLogNum(){
 	int rcnt = 0;
 	int pcnt = 0;
 	int ccnt = 0;
-	char rlog[64] = "\0";
-	char plog[64] = "\0";
-	char clog[64] = "\0";
+	char rlog[64] = "~";
+	char plog[64] = "~";
+	char clog[64] = "~";
 	struct dirent *ent = readdir(dir);
     while(NULL != ent)
     {
@@ -139,7 +139,7 @@ void LogFile::checkLogNum(){
 		char filename[64] = "\0";
 		strcat(filename, name);
 		strcat(filename, plog);
-		unlink(filename);
+		int ret = unlink(filename);
 	}
 }
 
