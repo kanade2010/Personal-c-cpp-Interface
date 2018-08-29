@@ -33,3 +33,4 @@ $(TARGET) : $(OBJ)
 
 clean:
 	rm -rf $(OBJOUT)*.o $(EXEOUT)$(TARGET)
+	rm -rf ./*.log

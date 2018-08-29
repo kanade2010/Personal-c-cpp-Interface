@@ -44,7 +44,7 @@ public:
 	T& operator*(){
 		return *get();
 	}
-	
+
 private:
 	T* m_ptr;
 };

@@ -15,8 +15,13 @@ public:
 	~AsyncLogging();
 
 	void start(){
-		m_runing = true;
+		m_isRunning = true;
 		m_thread.start();
+	}
+
+	void stop(){
+		m_isRunning = false;
+		m_cond.notify();
 	}
 
 	void append(const char *logline, int len);
@@ -32,15 +37,15 @@ private:
 	typedef oneself::auto_ptr<Buffer> BufferPtr;
 
 	const int m_flushInterval;
-	bool m_runing;
+	bool m_isRunning;
 	off_t m_rollSize;
 	std::string m_filePath;
 	Thread m_thread;
 	MutexLock m_mutex;
 	Condition m_cond;
 
-	BufferPtr m_pCurrentBuffer;
-	BufferVector m_vBuffers;
+	BufferPtr m_currentBuffer;
+	BufferVector m_buffers;
 };
 
 #endif

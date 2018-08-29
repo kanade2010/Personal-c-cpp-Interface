@@ -15,7 +15,6 @@ Thread::Thread(const ThreadFunc& threadRoutine)
 	:m_isRuning(false),
 	 m_threadId(0),
 	 m_threadRoutine(threadRoutine){
-	start();
 }
 
 Thread::~Thread(){

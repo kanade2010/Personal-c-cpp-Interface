@@ -5,7 +5,9 @@
 #include "LogFile.hh"
 #include "AsyncLogging.hh"
 #include "TimeStamp.hh"
+#include "auto_ptr.hh"
 #include <errno.h>
+#include <iostream>
 
 const off_t kRollSize = 2048*1000;
 
@@ -15,7 +17,23 @@ void asyncOutput(const char* logline, int len){
 	g_asynclog->append(logline, len);
 }
 
+namespace move_ptrs {
+template<typename Ptr>
+class move_source {
+public:
+    move_source(Ptr& ptr) : ptr_(ptr) {}
+    Ptr& ptr() const { return ptr_; }
+private:
+    Ptr& ptr_;
+    move_source(const Ptr&);
+};
 
+} // End namespace move_ptrs.
+
+
+template<typename T>
+move_ptrs::move_source<T> move(T& x) 
+{ return move_ptrs::move_source<T>(x); }
 
 int main(){
 
@@ -86,7 +104,26 @@ int main(){
 	//LOG_SYSFATAL << " just Test SF";
 */
 
+	//auto ptr test
+/*	oneself::auto_ptr<LogStream> plogs(new LogStream);
+
+	(*plogs) << " test auto_ptr \n";
+
+	if(plogs.get()) (*plogs) << " test auto_ptr \n";
+*/
+
 	//AsyncLogging Test
+
+	//std::move  test
+	/*oneself::auto_ptr<LogStream> splogs1(new LogStream);
+	oneself::auto_ptr<LogStream> splogs2;
+	(*splogs1) << "aaa\n";
+	//(*splogs2) << "bbb\n";
+	splogs2 = move(splogs1);
+	//splogs2.reset(splogs1.release());
+	(*splogs2) << "bbb\n";*/
+	//(*splogs1) << "CCC\n";
+
 	AsyncLogging log("./test.log", kRollSize);
 	log.start();
 	g_asynclog = &log;
@@ -103,13 +140,13 @@ int main(){
 
 		::gmtime_r(&seconds, &tm_time); // FIXME TimeZone::fromUtcTime
 
-		int len = printf("%4d-%02d-%02d %02d:%02d:%02d",
+		int len = printf("%4d-%02d-%02d %02d:%02d:%02d\n",
 		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
 		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
 }
 
 	for (int i = 0; i < 100; ++i){
-
+		//std::cout << i << ": "<< "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
 		LOG_INFO << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
 
 	}
@@ -124,7 +161,7 @@ int main(){
 
 		::gmtime_r(&seconds, &tm_time); // FIXME TimeZone::fromUtcTime
 
-		int len = printf("%4d-%02d-%02d %02d:%02d:%02d",
+		int len = printf("%4d-%02d-%02d %02d:%02d:%02d\n",
 		tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
 		tm_time.tm_hour + 8, tm_time.tm_min, tm_time.tm_sec);
 }
