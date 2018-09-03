@@ -5,7 +5,7 @@
 #include "LogStream.hh"
 #include "ptr_vector.hh"
 #include "Condition.hh"
-
+#include <memory>
 #include <string>
 
 class AsyncLogging
@@ -33,8 +33,8 @@ private:
 	void threadRoutine();
 
 	typedef LogBuffer<kLargeBuffer> Buffer;
-	typedef oneself::ptr_vector<Buffer> BufferVector;
-	typedef oneself::auto_ptr<Buffer> BufferPtr;
+	typedef myself::ptr_vector<Buffer> BufferVector;
+	typedef std::unique_ptr<Buffer> BufferPtr;
 
 	const int m_flushInterval;
 	bool m_isRunning;
@@ -45,6 +45,7 @@ private:
 	Condition m_cond;
 
 	BufferPtr m_currentBuffer;
+	BufferPtr m_nextBuffer;
 	BufferVector m_buffers;
 };
 

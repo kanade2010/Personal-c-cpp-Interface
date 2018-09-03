@@ -4,7 +4,7 @@
 #include <string.h>
 
 const int kSmallBuffer = 4096;
-const int kLargeBuffer = 4096;
+const int kLargeBuffer = 4096*1000;
 
 template<int SIZE>
 class LogBuffer
@@ -31,6 +31,7 @@ public:
 	int avail() const { return static_cast<int> (end() - m_cur); }
 	void add(size_t len) { m_cur += len; }
 	int length() const {return m_cur - m_data;}
+	void reset() {m_cur = m_data;}
 
 	const char* data() const { return m_data; }
 
