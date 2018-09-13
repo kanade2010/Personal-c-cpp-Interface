@@ -3,6 +3,8 @@
 #include "SocketHelp.hh"
 #include <errno.h>
 
+int g_sockfd = -1;
+
 Connector::Connector(const InetAddress& serverAddr):m_serverAddr(serverAddr)
 {
 	LOG_DEBUG << "Ctor[" /*<< this*/ << "]";
@@ -29,6 +31,7 @@ void Connector::connect()
 		case EINTR:
 		case EISCONN:
 		  //connecting(sockfd);
+		  g_sockfd = sockfd;
 		  LOG_INFO << "Connector::connect() Successful";
 		  break;
 
@@ -38,6 +41,7 @@ void Connector::connect()
 		case ECONNREFUSED:
 		case ENETUNREACH:
 		  //retry(sockfd);
+		  LOG_SYSERR << "connect retry undefine : " << savedErrno;
 		  break;
 
 		case EACCES:

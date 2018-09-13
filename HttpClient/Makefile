@@ -36,5 +36,5 @@ $(TARGET) : $(OBJ)
 
 clean:
 	rm -rf $(OBJOUT)*.o $(EXEOUT)$(TARGET)
-	rm -rf $(LOGGER_DIR)*.o
+	#rm -rf $(LOGGER_DIR)*.o
 	rm -rf ./*.o

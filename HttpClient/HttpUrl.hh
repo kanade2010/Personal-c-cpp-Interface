@@ -1,5 +1,5 @@
-#ifndef _URL_HH
-#define _URL_HH
+#ifndef _HTTPURL_HH
+#define _HTTPURL_HH
 #include "StringPiece.hh"
 #include "Logger.hh"
 #include <netdb.h>
@@ -10,24 +10,34 @@
 class HttpUrl
 {
 public:
-	HttpUrl(std::string& httpUrl):m_httpUrl(httpUrl){};
+	HttpUrl(std::string& httpUrl)
+	:m_httpUrl(httpUrl),
+	 m_smatch(detachHttpUrl())
+	{
+
+	}
 	~HttpUrl(){};
 
-
-	std::string getHttpUrlDomain() const
+	enum HttpUrlMatch
 	{
-		std::regex httpExpression("((http|https)?://)?([0-9\\.a-z]*)(/.*)?");
+		URL = 0,
+		HOST = 3,
+		URI = 4
+	};
+
+	std::smatch detachHttpUrl() const
+	{
+		std::regex httpExpression("((http|https)?://)?([0-9\\.a-zA-Z]*)/?(.*)?");
 		std::smatch result;
 
 		if(regex_match(m_httpUrl, result, httpExpression))
 		{
-			LOG_DEBUG << "getHttpUrlDomain() url :" << result[3].str().c_str();
-			return result[3].str();
+			LOG_DEBUG << "detachHttpUrl() url :" << result[URL].str().c_str();
+			return result;
 		}
 		else
 		{
-			LOG_DEBUG << "getHttpUrlDomain() failed";
-			return "";
+			LOG_FATAL << "detachHttpUrl() failed format error";
 		}
 
 	}
@@ -51,7 +61,7 @@ public:
 
 	InetAddress toInetAddr() const
 	{
-		std::string host = getHttpUrlDomain();
+		std::string host = getHttpUrlSubSeg(HOST);
 		char ip[32];
 		if(!HttpUrlToIp(host, ip)) LOG_SYSERR << "toInetAddr(): hostnameToIp error";
 		LOG_DEBUG << "HttpUrlToIp : " << ip;
@@ -59,9 +69,11 @@ public:
 		return servAddr;
 	}
 
+	std::string getHttpUrlSubSeg(HttpUrlMatch sub = HOST) const{ return m_smatch[sub].str(); }
 
 private:
 	std::string m_httpUrl;
+	std::smatch m_smatch;
 };
 
 #endif

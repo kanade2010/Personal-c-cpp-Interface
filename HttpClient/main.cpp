@@ -2,19 +2,42 @@
 #include "TcpClient.hh"
 #include "HttpClient.hh"
 #include "Logger.hh"
+#include "SocketHelp.hh"
+#include <map>
+#include <iostream>
 
 int main()
 {
+	/*
 	InetAddress serverAddr("212.100.220.116", 80);
 	LOG_INFO << serverAddr.family();
 	LOG_INFO << serverAddr.ipNetEndian();
-
+	*/
 	/*TcpClient client(serverAddr);
 	client.connect();
 	*/
 
-	HttpClient httpClient("aep.machinestalk.com");
-	httpClient.GET();
+	HttpClient httpClient("http://mycar.x431.com/");
+	//httpClient.GET("/", "");
+	httpClient.setRequestMethod("GET");
+	httpClient.setRequestProperty("Connection", "Keep-Alive\r\n");
+
+	std::cout << httpClient.strStream() << std::endl;
+
+	/*httpClient.clearStream();
+
+	httpClient.setRequestMethod("POST");
+	httpClient.setRequestProperty("Connection", "Keep-Alive");
+
+	std::cout << httpClient.strStream() << std::endl; */
+
+	httpClient.connect();
+
+	sockets::write(g_sockfd, httpClient.strStream().c_str(), httpClient.strStream().size());
+	char buf[4096] = {0};
+	while(sockets::read(g_sockfd, buf, 4096) > 0)
+		std::cout << buf << std::endl;
+
 
 	getchar();
 	return 0;
