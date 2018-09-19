@@ -22,7 +22,7 @@ namespace FileUtil{
 
 class AppendFile{
 public:
-	explicit AppendFile(StringArg fileName);
+	explicit AppendFile(StringArg filePath);
 
 	~AppendFile();
 

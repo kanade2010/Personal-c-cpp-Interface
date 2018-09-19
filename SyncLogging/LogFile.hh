@@ -21,7 +21,6 @@ public:
 
 private:
 	void append_unlocked(const char* logline, int len);
-	void checkLogNum();
 
 	//static std::string getlogFileName(const std::string& filePath);
 	bool rollFile();

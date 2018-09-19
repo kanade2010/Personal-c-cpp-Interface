@@ -1,11 +1,15 @@
 #include "FileUtil.hh"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
-FileUtil::AppendFile::AppendFile(StringArg filename)
-	:m_fp(::fopen(filename.c_str(), "ae")), // 'e' for O_CLOEXEC
-	 m_writtenBytes(0)
+static off_t FileSize(std::string path);
+
+FileUtil::AppendFile::AppendFile(StringArg filePath)
+	:m_fp(::fopen(filePath.c_str(), "ae")), // 'e' for O_CLOEXEC
+	 m_writtenBytes(FileSize(filePath.c_str()))
 {
 	assert(m_fp);
 	::setbuffer(m_fp, m_buffer, sizeof(m_buffer));
@@ -40,4 +44,24 @@ size_t FileUtil::AppendFile::write(const char* logline, const size_t len){
 
 void FileUtil::AppendFile::flush(){
 	::fflush(m_fp);
+}
+
+static off_t FileSize(std::string path) // get file size
+{
+     struct stat fileInfo;
+     if (stat(path.c_str(), &fileInfo) < 0)
+     {
+     	 switch(errno)
+     	 {
+     	 	case ENOENT:
+     	 	  return 0;
+     	 	default:
+         	  fprintf(stderr, "stat fileInfo failed : %s\n", strerror(errno));
+         	  abort();
+         }
+     }
+     else
+     {   
+         return fileInfo.st_size;
+     }
 }

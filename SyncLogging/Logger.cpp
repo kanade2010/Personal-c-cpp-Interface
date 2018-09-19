@@ -17,7 +17,7 @@ const char* strerror_tl(int savedErrno)
   return strerror_r(savedErrno, t_errnobuf, sizeof(t_errnobuf));
 }
 
-Logger::LogLevel g_logLevel = Logger::INFO;
+Logger::LogLevel g_logLevel = Logger::TRACE;
 
 void Logger::setLogLevel(LogLevel level){
 	g_logLevel = level;
@@ -57,25 +57,15 @@ void defaultOutput(const char *msg, int len){
 	(void)n;
 }
 
-void defaultOutputWithType(const char *msg, int len, Logger::LogType logtype){
-	size_t n = fwrite(msg, 1, len, stdout);
-	(void)n;
-}
-
 void defaultFlush(){
 	fflush(stdout);
 }
 
 Logger::outputFunc g_output = defaultOutput;
-Logger::outputWithType g_outputWithType = defaultOutputWithType;
 Logger::flushFunc g_flush = defaultFlush;
 
 void Logger::setOutput(outputFunc out){
 	g_output = out;
-}
-
-void Logger::setOutputWithType(outputWithType out){
-	g_outputWithType = out;
 }
 
 void Logger::setFlush(flushFunc flush){
@@ -83,35 +73,26 @@ void Logger::setFlush(flushFunc flush){
 }
 
 Logger::Logger(SourceFile file, int line)
-	: m_impl(INFO, 0, file, line),
-	  m_logtype(NONE){
+	: m_impl(INFO, 0, file, line){
 }
 
 Logger::Logger(SourceFile file, int line, LogLevel level)
-	: m_impl(level, 0, file, line),
-	  m_logtype(NONE){
+	: m_impl(level, 0, file, line){
 }
 
 Logger::Logger(SourceFile file, int line, bool toAbort)
-	: m_impl(toAbort? FATAL:ERROR, errno, file, line),
-	  m_logtype(NONE){
+	: m_impl(toAbort? FATAL:ERROR, errno, file, line){
 }
 
 Logger::Logger(SourceFile file, int line, LogLevel level, const char* func)
-	: m_impl(level, 0, file, line),
-	  m_logtype(NONE){
+	: m_impl(level, 0, file, line){
 	m_impl.m_stream << '[' << func << "] ";
-}
-
-Logger::Logger(SourceFile file, int line, LogLevel level, LogType logtype)
-	: m_impl(level, 0, file, line),
-	  m_logtype(logtype){
 }
 
 Logger::~Logger(){
 	m_impl.finish();
 	const LogStream::Buffer& buf(stream().buffer());
-	m_logtype == NONE ? g_output(buf.data(), buf.length()) : g_outputWithType(buf.data(), buf.length(), m_logtype);
+	g_output(buf.data(), buf.length());
 	if (m_impl.m_level == FATAL)
 	{
 		g_flush();

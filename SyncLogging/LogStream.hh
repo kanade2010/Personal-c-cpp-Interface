@@ -2,8 +2,9 @@
 #define _LOG_STREAM_HH
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
-const int kSmallBuffer = 4096;
+const int kSmallBuffer = 2048;
 const int kLargeBuffer = 4096;
 
 template<int SIZE>
@@ -68,6 +69,8 @@ public:
 
 	self& operator<<(char v);
 	self& operator<<(const char *);
+
+	self& operator<<(const std::string& s);
 
 	void append(const char* data, int len) { return m_buffer.append(data, len); }
 	const Buffer& buffer() const { return m_buffer; }

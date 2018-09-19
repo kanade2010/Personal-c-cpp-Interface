@@ -11,9 +11,9 @@ LogFile::LogFile(const std::string& filePath, off_t rollSize, bool threadSafe, i
 	 m_roolSize(rollSize),
 	 m_mutex(threadSafe ? new MutexLock : NULL),
 	 m_rollCnt(-1),
-	 m_flushInterval(flushInterval){
+	 m_flushInterval(flushInterval),
+	 m_file(new FileUtil::AppendFile(m_filePath)){
 	//assert(filePath.find('/') == std::string::npos);
-	rollFile();
 }
 
 LogFile::~LogFile(){
@@ -48,13 +48,17 @@ void LogFile::flush(){
 }
 
 bool LogFile::rollFile(){
-	std::string fileNameNew;
+	//std::string fileNameNew = m_filePath;
+	//fileNameNew = getlogFileName(m_filePath);
 
-	fileNameNew = getlogFileName(m_filePath);
-
-	m_file.reset(new FileUtil::AppendFile(fileNameNew));
-
-	checkLogNum();
+	if(m_file->writtenBytes() < m_roolSize)
+		m_file.reset(new FileUtil::AppendFile(m_filePath));
+	else
+	{
+		assert(remove(m_filePath.c_str()) == 0);
+		m_file.reset(new FileUtil::AppendFile(m_filePath));
+	}
+	//checkLogNum();
 
 	return true;
 }
@@ -75,7 +79,7 @@ std::string LogFile::getlogFileName(const std::string& baseName){
 	return fileName;
 }
 
-void LogFile::checkLogNum(){
+/*void LogFile::checkLogNum(){
 	char name[] = "./";
 	char str[32] = {0};
 	//把目录路径存放在字符数组内
@@ -139,9 +143,9 @@ void LogFile::checkLogNum(){
 		char filename[64] = "\0";
 		strcat(filename, name);
 		strcat(filename, plog);
-		int ret = unlink(filename);
+		unlink(filename);
 	}
-}
+}*/
 
 
 
