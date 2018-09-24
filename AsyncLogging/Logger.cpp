@@ -17,7 +17,7 @@ const char* strerror_tl(int savedErrno)
   return strerror_r(savedErrno, t_errnobuf, sizeof(t_errnobuf));
 }
 
-Logger::LogLevel g_logLevel = Logger::INFO;
+Logger::LogLevel g_logLevel = Logger::TRACE;
 
 void Logger::setLogLevel(LogLevel level){
 	g_logLevel = level;

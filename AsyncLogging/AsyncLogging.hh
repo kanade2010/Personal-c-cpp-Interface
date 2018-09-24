@@ -22,6 +22,7 @@ public:
 	void stop(){
 		m_isRunning = false;
 		m_cond.notify();
+		m_thread.join();
 	}
 
 	void append(const char *logline, int len);

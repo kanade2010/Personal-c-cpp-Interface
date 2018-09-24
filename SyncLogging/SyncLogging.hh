@@ -14,7 +14,7 @@ public:
 	~SyncLogging();
 
 	void append(const char *logline, int len);
-
+	void flush();
 private:
 	SyncLogging(const SyncLogging&);
 	SyncLogging& operator=(const SyncLogging&);

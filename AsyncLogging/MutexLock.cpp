@@ -2,11 +2,13 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 #define CHECK(exp) \
     if(!exp) \
 { \
-    fprintf(stderr, "Error/(%s, %d):[" #exp "] check error, abort.\n", __FILE__, __LINE__); abort();\
+    fprintf(stderr, "Error/(%s, %d):[" #exp "] check error %d :%s, abort.\n", __FILE__, __LINE__, errno, strerror(errno)); abort();\
 }
 
 MutexLock::MutexLock():m_isLocking(false){

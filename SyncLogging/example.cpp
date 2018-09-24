@@ -17,6 +17,10 @@ void SyncLoggingOutput(const char* logline, int len){
 	g_SyncLogging->append(logline, len);
 }
 
+void SyncLoggingflush(){
+	g_SyncLogging->flush();
+}
+
 void prinTime()
 {
 	TimeStamp m_time(TimeStamp::now());
@@ -110,14 +114,21 @@ int main(){
 	g_SyncLogging = &log;
 
 	Logger::setOutput(SyncLoggingOutput);
+	Logger::setFlush(SyncLoggingflush);
 
 	prinTime();
 
 	for(int j = 0 ; j < 1 ; ++j){
-		for (int i = 0; i < 100; ++i){
+		for (int i = 1; i <= 100; ++i){
 			LOG_WARN << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
 			LOG_DEBUG << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
 			LOG_TRACE << "Hello 0123456789" << " abcdefghijklmnopqrstuvwxyz ";
+			if(i == 90) 
+				{
+					LOG_FATAL << "FATAL~~~~~~~~~~~~~";
+					//log.~SyncLogging();
+					//abort();
+				}
 		}
 	//printf("sleep 1\n");
 	//sleep(1);

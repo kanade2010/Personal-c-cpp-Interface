@@ -13,6 +13,10 @@ SyncLogging::SyncLogging(const std::string& logPath, off_t rollSize, bool thread
 }
 
 SyncLogging::~SyncLogging(){
+	flush();
+}
+
+void SyncLogging::flush(){
 	m_logFile.append(m_buffer->data(), m_buffer->length());
 	m_logFile.flush();
 }

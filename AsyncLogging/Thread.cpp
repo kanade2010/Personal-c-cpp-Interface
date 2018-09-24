@@ -38,6 +38,7 @@ void Thread::start(){
 
 	CHECK(!pthread_attr_init(&attr));
 
+	/*
 	CHECK(!pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));    //set thread separation state property
 
 	CHECK(!pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED));    //Set thread inheritance
@@ -45,10 +46,10 @@ void Thread::start(){
 	CHECK(!pthread_attr_setschedpolicy(&attr, SCHED_OTHER));                //set thread scheduling policy
 
 	CHECK(!pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM));             //Set thread scope
-
+    */
 	CHECK(!pthread_create(&m_threadId, &attr, threadGuide, this));
 
-	//m_isRuning = true;
+	m_isRuning = true;
 
 }
 
