@@ -21,8 +21,8 @@ const int kBufferSize = 4096;	//Socket Buffer Size
 const std::string kBoundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
 
 //char gSn[13] = {0};
-//std::string gSn = "976890001624";
-std::string gSn = "978290000089";
+std::string gSn = "976890001624";
+//std::string gSn = "978290000089";
 
 //SyncLog 
 const off_t kRollSize = 1024*200;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	upload.connect();
 	upload.send();
 	upload.uploadFile(uploadFile, contentEnd);
-	//upload.handleRead();
+	upload.handleRead();
 
 	return 0;
 }

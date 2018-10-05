@@ -113,12 +113,15 @@ void HttpClient::handleRead()
 			getline(ss, line);
 			headsize += line.size() + 1;
 			if(!line.empty()) line.erase(line.end()-1); // remove '/r'
-			LOG_DEBUG << line;
+			//LOG_DEBUG << line;
 		}while(!line.empty());
 
 		LOG_DEBUG << "Http Head Size is " << headsize;
+		std::string res(m_buffer.peek(), headsize);
+		LOG_DEBUG << "Http Response :\n" << res;
 		m_buffer.retrieve(headsize);
-
+		std::string msg(m_buffer.peek(), m_buffer.readableBytes());
+		LOG_DEBUG << "Http message :\n" << msg << '\n';
 		//std::cout << (m_buffer.peek()) << std::endl;
 		//for(int i = 0; i < m_buffer.readableBytes(); i++) printf("%02x%c",*reinterpret_cast<const unsigned char*>(m_buffer.peek() + i),i==nread - 1 ?'\n':' ');
 	}
