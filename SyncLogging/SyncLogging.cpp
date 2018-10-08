@@ -17,13 +17,13 @@ SyncLogging::~SyncLogging(){
 }
 
 void SyncLogging::flush(){
-	m_logFile.append(m_buffer->data(), m_buffer->length());
-	m_logFile.flush();
+	//m_logFile.append(m_buffer->data(), m_buffer->length());
+	//m_logFile.flush();
 }
 
 void SyncLogging::append(const char* logline, int len){
 	MutexLockGuard lock(m_mutex);
-	if(m_buffer->avail() > len){
+	/*if(m_buffer->avail() > len){
 		m_buffer->append(logline, len);
 	}
 	else{
@@ -34,5 +34,7 @@ void SyncLogging::append(const char* logline, int len){
 		if(m_buffer->avail() > len){
 			m_buffer->append(logline, len);
 		}
-	}
+	}*/
+	m_logFile.append(logline, len);	
+	m_logFile.flush();
 }
