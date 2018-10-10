@@ -1,8 +1,14 @@
 #include "TcpClient.hh"
 
 
-TcpClient::TcpClient(const InetAddress &serverAddr)
+TcpClient::TcpClient(const InetAddress& serverAddr)
 	:m_connector(new Connector(serverAddr))
+{
+
+}
+
+TcpClient::TcpClient(const std::string& domain)
+	:m_connector(new Connector(domain))
 {
 
 }

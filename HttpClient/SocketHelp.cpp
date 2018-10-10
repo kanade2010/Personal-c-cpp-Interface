@@ -4,9 +4,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/uio.h>  // readv
 
 int sockets::createSocket(sa_family_t family){ 
-  // Call "socket()" to create a (IPv4) socket of the specified type.
+  // Call "socket()" to create a (family) socket of the specified type.
   // But also set it to have the 'close on exec' property (if we can)
 	
 	int sock;
@@ -49,6 +50,11 @@ ssize_t sockets::read(int sockfd, void *buf, size_t count)
   return ::read(sockfd, buf, count);
 }
 
+ssize_t sockets::readv(int sockfd, const struct iovec *iov, int iovcnt)
+{
+  return ::readv(sockfd, iov, iovcnt);
+}
+
 ssize_t sockets::write(int sockfd, const void *buf, size_t count)
 {
   return ::write(sockfd, buf, count);
@@ -61,6 +67,15 @@ void sockets::close(int sockfd)
     LOG_SYSERR << "sockets::close";
   }
 }
+
+void sockets::delaySecond(int sec)
+{
+  struct  timeval tv;
+  tv.tv_sec = sec;
+  tv.tv_usec = 0;
+  select(0, NULL, NULL, NULL, &tv);
+}
+
 
 /*
 const struct sockaddr* sockets::sockaddr_cast(const struct sockaddr_in* addr)

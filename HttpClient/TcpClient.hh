@@ -3,6 +3,7 @@
 
 #include "Connector.hh"
 #include <memory>
+#include <string>
 
 typedef std::shared_ptr<Connector> ConnectorPtr;
 
@@ -10,6 +11,7 @@ class TcpClient
 {
 public:
 	TcpClient(const InetAddress& serverAddr);
+	TcpClient(const std::string& domain);
 	~TcpClient();
 
 	void connect();

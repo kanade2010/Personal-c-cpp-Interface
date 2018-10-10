@@ -7,8 +7,9 @@ LOGGER_DIR = ./logger/
 SRC := $(wildcard *.cpp)
 SRC += $(wildcard $(LOGGER_DIR)*.cpp)
 OBJ := $(patsubst %.cpp,%.o,$(SRC))
-TARGET := HttpClient
+TARGET := http-client
 
+#CC := arm-oe-linux-gnueabi-g++
 CC := g++
 CFLAGS := -I$(INCLUDE_DIR)
 
@@ -18,7 +19,7 @@ $(TARGET) : $(OBJ)
 	@echo "OBJ : " $(OBJ) 
 	@echo "TARGET : " $(TARGET) 
 	#$(CC) -C $(LOGGER_DIR)
-	$(CC) $(CFLAGS) $^ -o $(TARGET) $(LIB)
+	$(CC) $(CFLAGS) $^ -o $(TARGET) $(LIB) -std=c++11
 	#mv $^ $(OBJOUT)
 	@echo "Compiling" $@ "end\n"
 
@@ -35,6 +36,6 @@ $(TARGET) : $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJOUT)*.o $(EXEOUT)$(TARGET)
-	#rm -rf $(LOGGER_DIR)*.o
+	rm -rf $(TARGET)
+	rm -rf $(LOGGER_DIR)*.o
 	rm -rf ./*.o

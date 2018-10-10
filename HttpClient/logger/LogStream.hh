@@ -2,9 +2,10 @@
 #define _LOG_STREAM_HH
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
-const int kSmallBuffer = 4096;
-const int kLargeBuffer = 4096*1000;
+const int kSmallBuffer = 2048;
+const int kLargeBuffer = 4096;
 
 template<int SIZE>
 class LogBuffer
@@ -14,7 +15,7 @@ public:
 	}
 
 	~LogBuffer(){
-		//printf("%s", m_data);
+		//printf("%d : %s", length(), m_data);
 	}
 
 	void append(const char* /*restrict*/ buf, size_t len){
@@ -31,6 +32,7 @@ public:
 	int avail() const { return static_cast<int> (end() - m_cur); }
 	void add(size_t len) { m_cur += len; }
 	int length() const {return m_cur - m_data;}
+	void bzero() { ::bzero(m_data, sizeof(m_data)); }
 	void reset() {m_cur = m_data;}
 
 	const char* data() const { return m_data; }
@@ -67,6 +69,8 @@ public:
 
 	self& operator<<(char v);
 	self& operator<<(const char *);
+
+	self& operator<<(const std::string& s);
 
 	void append(const char* data, int len) { return m_buffer.append(data, len); }
 	const Buffer& buffer() const { return m_buffer; }

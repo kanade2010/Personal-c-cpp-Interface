@@ -95,6 +95,17 @@ LogStream& LogStream::operator<<(const char *str){
 	return *this;
 }
 
+LogStream& LogStream::operator<<(const std::string& s){
+	if(!s.empty()){
+		m_buffer.append(s.c_str(), s.size());
+	}else{
+		m_buffer.append("(NULL)", 6);
+	}
+
+	return *this;
+}
+
+
 const char digits[] = "9876543210123456789";
 const char* zero = digits + 9;
 
