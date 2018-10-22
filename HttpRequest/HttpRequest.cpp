@@ -143,7 +143,7 @@ void HttpRequest::connect()
 
     InetAddress serverAddr = InetAddress(ip, 80);
 
-    int m_sockfd = sockets::createSocket(serverAddr.family());
+    m_sockfd = sockets::createSocket(serverAddr.family());
     if(m_sockfd < 0) LOG_SYSERR << "HttpRequest::connect() : createSocket error";
     int ret = sockets::connect(m_sockfd, serverAddr.getSockAddr());
     LOG_DEBUG << "sockfd : " << m_sockfd << "sockets::connect ret : " << ret ;
@@ -244,9 +244,14 @@ void HttpRequest::handleRead()
 
 	do{
 		getline(ss, line);
-		headsize += line.size() + 1;
+		headsize += line.size() + 1;  // + 1('\n')
 		if(!line.empty()) line.erase(line.end()-1); // remove '/r'
 		//LOG_DEBUG << line;
+		v.clear();
+		SplitString(line, v, ":");
+		if(v.size() == 2){
+			m_ackProperty[v[0]] = v[1].erase(0,v[1].find_first_not_of(" "));
+		}
 	}while(!line.empty());
 
 	LOG_DEBUG << "Http Head Size is " << headsize;
@@ -327,12 +332,14 @@ void HttpRequest::downloadFile(const std::string& file)
 	writtenBytes += m_buffer.readableBytes();
 	m_buffer.retrieve(m_buffer.readableBytes());
 
+	LOG_DEBUG << "Content-Length : " << getResponseProperty("Content-Length");
+
 	while(!isEnd)
 	{
 		nread = sockets::read(m_sockfd, m_buffer.beginWrite(), kBufferSize);
 		if(nread < 0) LOG_SYSFATAL << "sockets::read";
 		m_buffer.hasWritten(nread);
-		LOG_TRACE << "sockets::read(): nread: " << nread << " remain: " << m_buffer.writableBytes();
+		LOG_TRACE << "sockets::read(): nread: " << nread << " remain: " << m_buffer.writableBytes() << " writtenBytes: " << writtenBytes;
 		size_t remain = kBufferSize - nread;
 		while(remain > 0)
 		{
@@ -348,18 +355,9 @@ void HttpRequest::downloadFile(const std::string& file)
 			remain = remain - n;
 		}
 
-		//LOG_TRACE << "Before Write Buffer readableBytes() " << m_buffer.readableBytes() << " | Buffer writableBytes() " << m_buffer.writableBytes();
 		output.write(m_buffer.peek(), m_buffer.readableBytes());
 		writtenBytes += m_buffer.readableBytes();
 		m_buffer.retrieve(m_buffer.readableBytes());
-		//LOG_TRACE << "After Write Buffer readableBytes() " << m_buffer.readableBytes() << " | Buffer writableBytes() " << m_buffer.writableBytes();
-		//LOG_TRACE << " writtenBytes " << writtenBytes;
-
-		/*std::string msg(m_buffer.peek(), m_buffer.readableBytes());
-		m_buffer.retrieve(m_buffer.readableBytes());
-		LOG_DEBUG << "Http message :\n" << msg << '\n';*/
-		//std::cout << (m_buffer.peek()) << std::endl;
-		//for(int i = 0; i < m_buffer.readableBytes(); i++) printf("%02x%c",*reinterpret_cast<const unsigned char*>(m_buffer.peek() + i),i==nread - 1 ?'\n':' ');
 	}
 	LOG_DEBUG << " writtenBytes " << writtenBytes;
 

@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <string.h>
 #include <sstream>
+#include <map>
 #include "Logger.hh"
 
 const size_t kBufferSize = 4096;
@@ -251,6 +252,11 @@ public:
 		return m_code;
 	}
 
+	std::string getResponseProperty(const std::string& key) const {
+		assert(m_haveHandleHead);
+		return m_ackProperty.at(key);
+	}
+
 	std::string getResponseContent() {
 		assert(m_haveHandleHead);
 		return std::string(m_buffer.peek(), m_buffer.readableBytes());
@@ -275,6 +281,7 @@ private:
 	int m_code;
 	int m_sockfd;
 	bool m_haveHandleHead;
+	std::map<std::string, std::string> m_ackProperty;
 };
 
 #endif

@@ -3,33 +3,17 @@
 
 int main()
 {
-  /*
-  HttpRequest ImageReq("https://dlc2.pconline.com.cn/filedown_870344_9474088/l0WE76og/apploc.msi");
+
+  HttpRequest ImageReq("http://img.zcool.cn/community/01ddc256eb71586ac7257d209712b7.jpg@1280w_1l_2o_100sh.jpg");
   ImageReq.setRequestMethod("GET");
   ImageReq.setRequestProperty("Cache-Control", "no-cache");
   ImageReq.setRequestProperty("Content-Type", "application/octet-stream");
-  ImageReq.setRequestProperty("Connection", "Keep-Alive\r\n");
+  ImageReq.setRequestProperty("Connection", "close\r\n");
 
   ImageReq.connect();
   ImageReq.send();
   ImageReq.handleRead();
-  ImageReq.downloadFile("./test.file");
-*/
-
-
-    HttpRequest appDownReq("https://cngldlcenter.x431.com/pointdown?versionDetailId=22807");// + versionDetailId);
-    appDownReq.setRequestMethod("GET");
-    appDownReq.setRequestProperty("Cache-Control", "no-cache");
-    appDownReq.setRequestProperty("Content-Type", "application/octet-stream");
-    appDownReq.setRequestProperty("Connection", "Keep-Alive\r\n");
-
-    LOG_INFO << "Send Get Request : \n" << appDownReq.strStream();
-
-    appDownReq.connect();
-    appDownReq.send();
-    appDownReq.handleRead();
-    appDownReq.downloadFile("./install.tar.gz");
-    LOG_INFO << "DownLoad App Update File Successfully\n";
+  ImageReq.downloadFile("./test.jpg");
 
   return 0;
 
