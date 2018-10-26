@@ -21,6 +21,8 @@ public:
 	bool isInloopThread() const {return m_threadId == CurrentThread::tid(); }
 
 
+	static EventLoop* getEventLoopOfCurrentThread();
+
 private:
 	EventLoop& operator=(const EventLoop&);
 	EventLoop(const EventLoop&);

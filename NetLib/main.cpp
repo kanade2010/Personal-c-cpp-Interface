@@ -1,5 +1,6 @@
 #include <errno.h>
 #include "EventLoop.hh"
+#include <thread>
 
 /*
 void test()
@@ -30,12 +31,28 @@ int main()
 
 */
 
+EventLoop* g_loop;
+
+void test()
+{
+
+  g_loop->loop();
+
+}
 
 
 int main()
 {
   EventLoop testloop;
-  EventLoop tes;
+
+  //testloop.loop();
+
+  g_loop = &testloop;
+
+  std::thread test_thread(test);
+
+  test_thread.join();
 
   return 0;
 }
+

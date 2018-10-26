@@ -1,6 +1,7 @@
 #include "EventLoop.hh"
 #include "Logger.hh"
 #include <assert.h>
+#include <poll.h>
 
 __thread EventLoop* t_loopInThisThread = 0;
 
@@ -28,4 +29,28 @@ EventLoop::~EventLoop()
 
 void EventLoop::loop()
 {
+  assert(!m_looping);
+  assertInLoopThread();
+  m_looping = true;
+
+  LOG_TRACE << "EventLoop " << this << " start loopig";
+
+  ::poll(NULL, 0, 3*1000);
+
+  LOG_TRACE << "EventLoop " << this << " stop loopig";
+  m_looping = false;
+
 }
+
+void EventLoop::abortNotInLoopThread()
+{
+  LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
+            << " was created in threadId_ = " << m_threadId
+            << ", current thread id = " <<  CurrentThread::tid();
+}
+
+EventLoop* EventLoop::getEventLoopOfCurrentThread()
+{
+  return t_loopInThisThread;
+}
+
