@@ -1,10 +1,11 @@
 #include <errno.h>
 #include <thread>
 #include <strings.h>
-
+#include <poll.h>
 #include "EventLoop.hh"
 #include "Channel.hh"
 #include "Poller.hh"
+#include "Logger.hh"
 
 
 /*
@@ -64,7 +65,7 @@ int main()
 
 */
 
-
+/*
 //Reactor Test
 //单次触发定时器
 #include <sys/timerfd.h>
@@ -99,5 +100,48 @@ int main()
   close(timerfd);
 
 }
+
+
+*/
+
+EventLoop* g_loop;
+
+void readCallBack()
+{
+
+  LOG_DEBUG << "readCallBack happend.";
+  char buf[1024] = {0};
+  ssize_t n = read(0, buf, 1024);
+  if(n < 0) LOG_FATAL << "read error";
+
+  LOG_DEBUG << buf;
+
+  /*if(buf[0] == 'q');
+  {
+    LOG_DEBUG << "quit .";
+    g_loop->quit();
+  }*/
+
+}
+
+
+int main()
+{
+  struct pollfd fds;
+  fds.fd = 0;
+
+  int fd = 0;
+
+  EventLoop stdinLoop;
+  g_loop = &stdinLoop;
+
+  Channel channel(&stdinLoop, fd);
+  channel.setReadCallBack(readCallBack);
+  channel.eableReading();
+
+  g_loop->loop();
+
+}
+
 
 
