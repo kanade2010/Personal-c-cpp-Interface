@@ -1,8 +1,8 @@
 OBJOUT := ./out/
 EXEOUT := ./out/
-INCLUDE_DIR := ./SyncLogging/
+INCLUDE_DIR := ../SyncLogging/
 LIB := -lpthread
-LOGGER_DIR = ./SyncLogging/
+LOGGER_DIR = ../SyncLogging/
 
 SRC := $(wildcard *.cpp)
 SRC += $(wildcard $(LOGGER_DIR)*.cpp)

@@ -26,11 +26,23 @@ public:
 // Get time of now.
 //
 	static TimeStamp now();
+  static TimeStamp invalid()
+  {
+    return TimeStamp();
+  }
 
 	static const int kMicroSecondsPerSecond = 1000 * 1000;
 
 private:
 	int64_t m_microSecondsSinceEpoch;
 };
+
+
+inline TimeStamp addTime(TimeStamp timestamp, double seconds)
+{
+  int64_t delta = static_cast<int64_t>(seconds * TimeStamp::kMicroSecondsPerSecond);
+  return TimeStamp(timestamp.microSecondsSinceEpoch() + delta);
+}
+
 
 #endif
