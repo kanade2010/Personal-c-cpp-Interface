@@ -28,6 +28,7 @@ public:
 
 	void quit();
 	void updateChannel(Channel* channel);
+  void removeChannel(Channel* channel);
 
 	static EventLoop* getEventLoopOfCurrentThread();
 

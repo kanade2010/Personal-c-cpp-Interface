@@ -104,6 +104,7 @@ int main()
 
 */
 
+/*
 EventLoop* g_loop;
 
 void readCallBack()
@@ -115,12 +116,6 @@ void readCallBack()
   if(n < 0) LOG_FATAL << "read error";
 
   LOG_DEBUG << buf;
-
-  /*if(buf[0] == 'q');
-  {
-    LOG_DEBUG << "quit .";
-    g_loop->quit();
-  }*/
 
 }
 
@@ -137,7 +132,7 @@ int main()
 
   Channel channel(&stdinLoop, fd);
   channel.setReadCallBack(readCallBack);
-  channel.eableReading();
+  channel.enableReading();
 
   g_loop->loop();
 
@@ -145,3 +140,28 @@ int main()
 
 
 
+*/
+
+#include "Acceptor.hh"
+#include "SocketHelp.hh"
+#include "InetAddress.hh"
+
+
+void newConnetion(int sockfd, const InetAddress& peeraddr)
+{
+  LOG_DEBUG << "newConnetion() : accepted a new connection from";
+  ::write(sockfd, "How are you?\n", 13);
+  ::sockets::close(sockfd);
+}
+
+int main()
+{
+  InetAddress listenAddr(8888);
+  EventLoop loop;
+  Acceptor acceptor(&loop, listenAddr);
+  acceptor.setNewConnectionCallBack(newConnetion);
+  acceptor.listen();
+
+  loop.loop();
+
+}

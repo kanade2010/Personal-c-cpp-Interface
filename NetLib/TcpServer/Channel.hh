@@ -29,12 +29,15 @@ public:
   void set_revents(int revt) { m_revents = revt; }
   bool isNoneEvent() const { return m_events == kNoneEvent; }
 
-  void eableReading() { m_events |=  kReadEvent; update(); }
+  void enableReading() { m_events |=  kReadEvent; update(); }
 
+  void disableAll() { m_events = kNoneEvent; update(); }
+  
   int index() { return m_index; }
   void set_index(int idx) { m_index =idx; }
 
-  EventLoop* ownerLoop() { return m_pLoop; }
+  EventLoop* ownerLoop() { return p_loop; }
+  void remove();
 
 private:
   Channel& operator=(const Channel&);
@@ -46,11 +49,12 @@ private:
   static const int kReadEvent;
   static const int kWriteEvent;
 
-  EventLoop* m_pLoop;
+  EventLoop* p_loop;
   const int m_fd;
   int m_events;    // 等待的事件
   int m_revents;   // 实际发生了的事件
   int m_index;
+  bool m_addedToLoop;
 
   EventCallBack m_readCallBack;
   EventCallBack m_writeCallBack;

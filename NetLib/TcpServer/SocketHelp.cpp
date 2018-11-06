@@ -1,6 +1,6 @@
 #include "SocketHelp.hh"
 #include "Logger.hh"
-#include "Edian.hh"
+#include "Endian.hh"
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -116,7 +116,7 @@ void sockets::listenOrDie(int sockfd)
 int sockets::accept(int sockfd, struct sockaddr_in6* addr)
 {
   socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
-#if VALGRIND || defined (NO_ACCEPT4)
+#if defined (NO_ACCEPT4)
   int connfd = ::accept(sockfd, (struct sockaddr *)(addr), &addrlen);
   setNonBlockAndCloseOnExec(connfd);
 #else

@@ -12,14 +12,16 @@ namespace sockets
 int createSocket(sa_family_t family);
 
 int  connect(int sockfd, const struct sockaddr* addr);
+int createNonblockingOrDie(sa_family_t);
 void bindOrDie(int sockfd, const struct sockaddr* addr);
 void listenOrDie(int sockfd);
+int accept(int sockfd, struct sockaddr_in6* addr);
 
 ssize_t read(int sockfd, void *buf, size_t count);
 ssize_t readv(int sockfd, const struct iovec *iov, int iovcnt);
 ssize_t write(int sockfd, const void *buf, size_t count);
 void close(int sockfd);
-void sockets::shutdownWrite(int sockfd);
+void shutdownWrite(int sockfd);
 
 void fromIpPort(const char* ip, uint16_t port,
                 struct sockaddr_in* addr);

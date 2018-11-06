@@ -14,13 +14,13 @@ public:
   int fd() const { return m_sockfd; }
   //return true if success.
   bool getTcpInfo(struct tcp_info* ) const;
-  bool getTcpInfostring(char* buf, int len) const;
+  bool getTcpInfoString(char* buf, int len) const;
 
   void bindAddress(const InetAddress& localaddr);
   void listen();
-  int sockets::accept(int sockfd, struct sockaddr_in6* addr);
+  int accept(int sockfd, struct sockaddr_in6* addr);
 
-  int accepted(InetAddress* peeraddr);
+  int accept(InetAddress* peeraddr);
   void shutdownWrite();
 
   void setTcpNoDelay(bool on);

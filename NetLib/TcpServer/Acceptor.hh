@@ -10,14 +10,15 @@ class InetAddress;
 
 class Acceptor{
 public:
-  typedef std::function<void (int sockfd, const InetAddress&)> NetConnectionCallBack;
+  typedef std::function<void (int sockfd, const InetAddress&)> NewConnectionCallBack;
 
-  Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reuseport);
+  Acceptor(EventLoop* loop, const InetAddress& listenAddr, bool reuseport = true);
+  ~Acceptor();
 
   bool listenning() const;
   void listen();
 
-  void setNewConnectionCallBack(cont NetConnectionCallBack& cb);
+  void setNewConnectionCallBack(const NewConnectionCallBack& cb) { m_newConnectionCallBack = cb; }
 
 private:
   Acceptor& operator=(const Acceptor&);

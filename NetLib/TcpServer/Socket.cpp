@@ -3,6 +3,11 @@
 #include <strings.h>
 #include <stdio.h>
 
+#include "InetAddress.hh"
+#include "Socket.hh"
+#include "Logger.hh"
+#include "SocketHelp.hh"
+
 Socket::~Socket()
 {
   sockets::close(m_sockfd);

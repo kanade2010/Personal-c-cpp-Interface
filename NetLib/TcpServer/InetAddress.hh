@@ -2,14 +2,18 @@
 #define _INET_ADDRESS_HH
 
 #include <netinet/in.h>
-#include "StringPiece.hh"
+#include <string>
 
 class InetAddress
 {
  public:
+  /// Constructs an endpoint with given port number.
+  /// Mostly used in TcpServer listening.
+  explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
+
   /// Constructs an endpoint with given ip and port.
   /// @c ip should be "1.2.3.4"
-  InetAddress(StringArg ip, uint16_t port);
+  InetAddress(std::string ip, uint16_t port, bool ipv6 = false);
 
   /// Constructs an endpoint with given struct @c sockaddr_in
   /// Mostly used when accepting new connections
@@ -40,7 +44,7 @@ class InetAddress
   union{
     struct sockaddr_in m_addr;
     struct sockaddr_in6 m_addr6;
-  }
+  };
 };
 
 #endif

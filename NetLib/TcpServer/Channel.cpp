@@ -1,4 +1,6 @@
 #include <poll.h>
+#include <assert.h>
+
 #include "Channel.hh"
 #include "Logger.hh"
 
@@ -7,11 +9,12 @@ const int Channel::kReadEvent = POLLIN | POLLPRI;
 const int Channel::kWriteEvent = POLLOUT;
 
 Channel::Channel(EventLoop* loop, int fd)
-  : m_pLoop(loop),
+  : p_loop(loop),
     m_fd(fd),
     m_events(0),
     m_revents(0),
-    m_index(-1)
+    m_index(-1),
+    m_addedToLoop(false)
 {
 
 }
@@ -23,9 +26,16 @@ Channel::~Channel()
 
 void Channel::update()
 {
-  m_pLoop->updateChannel(this);
+  m_addedToLoop = true;
+  p_loop->updateChannel(this);
 }
 
+void Channel::remove()
+{
+  assert(isNoneEvent());
+  m_addedToLoop = false;
+  p_loop->removeChannel(this);
+}
 
 void Channel::handleEvent()
 {
