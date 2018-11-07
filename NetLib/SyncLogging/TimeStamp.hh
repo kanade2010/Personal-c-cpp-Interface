@@ -44,5 +44,14 @@ inline TimeStamp addTime(TimeStamp timestamp, double seconds)
   return TimeStamp(timestamp.microSecondsSinceEpoch() + delta);
 }
 
+inline bool operator<(TimeStamp lhs, TimeStamp rhs)
+{
+  return lhs.microSecondsSinceEpoch() < rhs.microSecondsSinceEpoch();
+}
+
+inline bool operator==(TimeStamp lhs, TimeStamp rhs)
+{
+  return lhs.microSecondsSinceEpoch() == rhs.microSecondsSinceEpoch();
+}
 
 #endif
