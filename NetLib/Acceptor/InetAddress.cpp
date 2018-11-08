@@ -83,3 +83,11 @@ uint32_t InetAddress::ipNetEndian() const
   assert(family() == AF_INET);
   return m_addr.sin_addr.s_addr;
 }
+
+
+std::string InetAddress::toIpPort() const
+{
+  char buf[64] = "";
+  sockets::toIpPort(buf, sizeof buf, getSockAddr());
+  return buf;
+}

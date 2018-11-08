@@ -3,7 +3,8 @@
 
 #include <functional>
 
-#include "EventLoop.hh"
+
+class EventLoop;
 
 /*
  *每个Channel对象自始至终只属于一个EventLoop，
@@ -29,8 +30,10 @@ public:
   void set_revents(int revt) { m_revents = revt; }
   bool isNoneEvent() const { return m_events == kNoneEvent; }
 
-  void enableReading() { m_events |=  kReadEvent; update(); }
-
+  void enableReading() { m_events |= kReadEvent; update(); }
+  void disableReading() { m_events &= ~kReadEvent; update(); }
+  void enableWriting() { m_events |= kWriteEvent; update(); }
+  void disableWriting() { m_events &= ~kWriteEvent; update(); }
   void disableAll() { m_events = kNoneEvent; update(); }
 
   int index() { return m_index; }

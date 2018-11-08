@@ -26,7 +26,7 @@ int main()
   InetAddress serverAddr("127.0.0.1", 8888);
   Connector client(&loop, serverAddr);
   client.setNewConnectionCallback(newConnetion);
-  client.connect();
+  client.start();
 
   loop.loop();
 

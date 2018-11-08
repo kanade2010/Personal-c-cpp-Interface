@@ -32,6 +32,8 @@ class InetAddress
   const struct sockaddr* getSockAddr() const { return (struct sockaddr*)(&m_addr6); }
   void setSockAddrInet6(const struct sockaddr_in6& addr6) { m_addr6 = addr6; }
 
+  std::string toIpPort() const;
+
   uint32_t ipNetEndian() const;
 
   // resolve hostname to IP address, not changing port or sin_family

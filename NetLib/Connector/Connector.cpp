@@ -6,7 +6,8 @@
 
 Connector::Connector(EventLoop* loop, const InetAddress& serverAddr)
   :p_loop(loop),
-  m_serverAddr(serverAddr)
+  m_serverAddr(serverAddr),
+  m_retryDelayMs(kInitRetryDelayMs)
 {
 
 }
@@ -16,6 +17,11 @@ Connector::~Connector()
 
 }
 
+void Connector::start()
+{
+
+  connect();
+}
 
 void Connector::connect()
 {
@@ -26,9 +32,9 @@ void Connector::connect()
   switch(savedErrno)
   {
     case 0:
-    case EINPROGRESS:
-    case EINTR:
-    case EISCONN:
+    case EINPROGRESS:      //Operation now in progress 
+    case EINTR:            //Interrupted system call 
+    case EISCONN:          //Transport endpoint is already connected 
       connecting(sockfd);
       break;
 
@@ -66,8 +72,19 @@ void Connector::connecting(int sockfd)
   assert(!p_channel);
   p_channel.reset(new Channel(p_loop, sockfd));
   p_channel->setWriteCallBack(std::bind(&Connector::handleWrite, this));
+  //p_channel->setErrorCallback()
 
+  //enableWriting if Channel Writeable ,Connect Success. 
   p_channel->enableWriting();
+}
+
+void Connector::retry(int sockfd)
+{
+  sockets::close(sockfd);
+
+  LOG_INFO << "Connector::retry - Retry connecting to " << m_serverAddr.toIpPort()
+           << " in " << m_retryDelayMs << " milliseconds. ";
+
 }
 
 void Connector::handleWrite()
@@ -75,3 +92,6 @@ void Connector::handleWrite()
   LOG_TRACE << "Connector::handleWrite ";
   m_newConnectionCallBack(p_channel->fd());
 }
+
+
+

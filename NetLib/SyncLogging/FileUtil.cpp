@@ -5,11 +5,11 @@
 #include <string.h>
 #include <sys/stat.h>
 
-static off_t FileSize(std::string path);
+static off_t fileSize(const std::string& path);
 
 FileUtil::AppendFile::AppendFile(StringArg filePath)
 	:m_fp(::fopen(filePath.c_str(), "ae")), // 'e' for O_CLOEXEC
-	 m_writtenBytes(FileSize(filePath.c_str()))
+	 m_writtenBytes(fileSize(filePath.c_str()))
 {
 	assert(m_fp);
 	::setbuffer(m_fp, m_buffer, sizeof(m_buffer));
@@ -46,7 +46,7 @@ void FileUtil::AppendFile::flush(){
 	::fflush(m_fp);
 }
 
-static off_t FileSize(std::string path) // get file size
+static off_t fileSize(const std::string& path) // get file size
 {
      struct stat fileInfo;
      if (stat(path.c_str(), &fileInfo) < 0)

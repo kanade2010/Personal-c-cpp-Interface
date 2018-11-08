@@ -8,33 +8,34 @@ public:
 //
 // Constucts an invalid TimeStamp.
 //
-	TimeStamp()
-	: m_microSecondsSinceEpoch(0){
-	}
+  TimeStamp()
+  : m_microSecondsSinceEpoch(0){
+  }
 
 //
 // Constucts a TimeStamp at specific time
 //
 // @param microSecondsSinceEpoch
-	explicit TimeStamp(int64_t microSecondsSinceEpochArg)
-	: m_microSecondsSinceEpoch(microSecondsSinceEpochArg){
-	}
+  explicit TimeStamp(int64_t microSecondsSinceEpochArg)
+  : m_microSecondsSinceEpoch(microSecondsSinceEpochArg){
+  }
 
-	int64_t microSecondsSinceEpoch() const { return m_microSecondsSinceEpoch; }
+  int64_t microSecondsSinceEpoch() const { return m_microSecondsSinceEpoch; }
 
 //
 // Get time of now.
 //
-	static TimeStamp now();
+  static TimeStamp now();
+
   static TimeStamp invalid()
   {
     return TimeStamp();
   }
 
-	static const int kMicroSecondsPerSecond = 1000 * 1000;
+  static const int kMicroSecondsPerSecond = 1000 * 1000;
 
 private:
-	int64_t m_microSecondsSinceEpoch;
+  int64_t m_microSecondsSinceEpoch;
 };
 
 

@@ -25,6 +25,10 @@ void shutdownWrite(int sockfd);
 void fromIpPort(const char* ip, uint16_t port,
                 struct sockaddr_in* addr);
 
+void toIpPort(char* buf, size_t size,
+                       const struct sockaddr* addr);
+void toIp(char* buf, size_t size,
+                   const struct sockaddr* addr);
 int getSocketError(int sockfd);
 void delaySecond(int sec);
 //const struct sockaddr* sockaddr_cast(const struct sockaddr_in* addr)

@@ -6,7 +6,7 @@
 #include "Channel.hh"
 #include "Poller.hh"
 #include "Logger.hh"
-
+#include "AsyncLogging.hh"
 
 /*
 void test()
@@ -142,6 +142,19 @@ int main()
 
 */
 
+const off_t kRollSize = 2048*1000;
+
+AsyncLogging* g_asynclog = NULL;
+
+void asyncOutput(const char* logline, int len){
+  g_asynclog->append(logline, len);
+}
+
+void AsyncFlush()
+{
+  g_asynclog->stop();
+}
+
 #include "Acceptor.hh"
 #include "SocketHelp.hh"
 #include "InetAddress.hh"
@@ -156,6 +169,12 @@ void newConnetion(int sockfd, const InetAddress& peeraddr)
 
 int main()
 {
+  AsyncLogging log("/dev/stdout", kRollSize, 0.1);
+  g_asynclog = &log;
+  Logger::setOutput(asyncOutput);
+  Logger::setFlush(AsyncFlush);
+  g_asynclog->start();
+
   InetAddress listenAddr(8888);
   EventLoop loop;
   Acceptor acceptor(&loop, listenAddr);

@@ -38,11 +38,12 @@ public:
 
 private: 
 
+ 	static const size_t kFileBufferSize = 4096; 
 	size_t write(const char *logline, int len);
 
 	FILE* m_fp;
 	off_t m_writtenBytes;
-	char m_buffer[4096];
+	char m_buffer[kFileBufferSize];
 };
 
 }

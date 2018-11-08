@@ -2,9 +2,9 @@ SRC := $(wildcard *.cpp)
 OBJ := $(patsubst %.cpp,%.o,$(SRC))
 TARGET := logtest
 
-OBJOUT := ./out/
-EXEOUT := ./out/
-INCLUDE_DIR := ./
+OBJOUT := .
+EXEOUT := .
+INCLUDE_DIR := .
 LIB := -lpthread
 
 CC := g++
@@ -15,8 +15,8 @@ $(TARGET) : $(OBJ)
 	@echo "SRC : " $(SRC) 
 	@echo "OBJ : " $(OBJ) 
 	@echo "TARGET : " $(TARGET) 
-	$(CC) $(CFLAGS) $^ -o $(EXEOUT)$@ $(LIB)
-	mv $^ $(OBJOUT)
+	$(CC) $(CFLAGS) $^ -o $(TARGET) $(LIB)
+	#mv $^ $(OBJOUT)
 	@echo "Compiling" $@ "end\n"
 
 %.o : %.c
@@ -32,5 +32,5 @@ $(TARGET) : $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJOUT)*.o $(EXEOUT)$(TARGET)
+	rm -rf $(OBJOUT)/*.o $(EXEOUT)/$(TARGET)
 	rm -rf ./*.log

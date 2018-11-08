@@ -25,14 +25,21 @@ public:
   void restart();// must be called in loop thread
   void stop(); // can be called in any thread
 
+  void handleWrite();
+private:
+  const Connector operator=(const Connector&);
+  Connector(const Connector&);
+  
+  enum States { kDisconnected, kConnecting, kConnected };
+  static const int kMaxRetryDelayMs = 30*1000;
+  static const int kInitRetryDelayMs = 500;
 
   void connect();
   void connecting(int sockfd);
-
-  void handleWrite();
-private:
+  void retry(int sockfd);
 
   EventLoop* p_loop;
+  int m_retryDelayMs;
   InetAddress m_serverAddr;
   std::unique_ptr<Channel> p_channel;
   NewConnectionCallback m_newConnectionCallBack;

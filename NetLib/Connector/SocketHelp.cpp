@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <assert.h>
 #include <sys/uio.h>  // readv
 
 int sockets::createSocket(sa_family_t family){ 
@@ -155,6 +156,34 @@ int sockets::accept(int sockfd, struct sockaddr_in6* addr)
     }
   }
   return connfd;
+}
+
+void sockets::toIpPort(char* buf, size_t size,
+                       const struct sockaddr* addr)
+{
+  toIp(buf, size, addr);
+  size_t end = ::strlen(buf);
+  const struct sockaddr_in* addr4 = (const struct sockaddr_in* )(addr);
+  uint16_t port = sockets::networkToHost16(addr4->sin_port);
+  assert(size > end);
+  snprintf(buf+end, size-end, ":%u", port);
+}
+
+void sockets::toIp(char* buf, size_t size,
+                   const struct sockaddr* addr)
+{
+  if (addr->sa_family == AF_INET)
+  {
+    assert(size >= INET_ADDRSTRLEN);
+    const struct sockaddr_in* addr4 = (const struct sockaddr_in* )(addr);
+    ::inet_ntop(AF_INET, &addr4->sin_addr, buf, static_cast<socklen_t>(size));
+  }
+  else if (addr->sa_family == AF_INET6)
+  {
+    assert(size >= INET6_ADDRSTRLEN);
+    const struct sockaddr_in6* addr6 = (const struct sockaddr_in6* )(addr);
+    ::inet_ntop(AF_INET6, &addr6->sin6_addr, buf, static_cast<socklen_t>(size));
+  }
 }
 
 /*

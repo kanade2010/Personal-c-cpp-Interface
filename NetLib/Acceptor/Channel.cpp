@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include "Channel.hh"
+#include "EventLoop.hh"
 #include "Logger.hh"
 
 const int Channel::kNoneEvent = 0;
