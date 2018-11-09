@@ -1,5 +1,6 @@
 #include "SyncLogging.hh"
 #include "LogFile.hh"
+#include <inttypes.h>
 #include <assert.h>
 #include <stdio.h>
 

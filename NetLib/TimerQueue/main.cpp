@@ -88,7 +88,7 @@ int main()
 
   Channel channel(&loop, timerfd);
   channel.setReadCallBack(timeout);
-  channel.eableReading();
+  channel.enableReading();
 
   struct itimerspec howlong;
   bzero(&howlong, sizeof howlong);

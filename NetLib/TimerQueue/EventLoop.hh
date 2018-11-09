@@ -1,11 +1,16 @@
-#ifndef NET_EVENTLOOP_H
-#define NET_EVENTLOOP_H
+#ifndef _NET_EVENTLOOP_H
+#define _NET_EVENTLOOP_H
 
 #include <memory>
 #include <vector>
 #include <functional>
 
+#include "TimerId.hh"
+#include "TimeStamp.hh"
+#include "TimerQueue.hh"
+#include "CallBacks.hh"
 #include "CurrentThread.hh"
+#include "MutexLock.hh"
 
 class Poller;
 class Channel;
@@ -32,11 +37,14 @@ public:
   void queueInLoop(const Functor& cb);
 
 	void quit();
-	void updateChannel(Channel* channel);
 
-	TimerId runAt(const TimeStamp& time, const NetCallBacks::TimerCallback& cb);
-	TimerId runAfter(double delay, const NetCallBacks::TimerCallback& cb);
-	TimerId runEvery(double interval, const NetCallBacks::& cb);
+	void wakeup();
+	void updateChannel(Channel* channel);
+  void removeChannel(Channel* channel);
+
+	TimerId runAt(const TimeStamp& time, const NetCallBacks::TimerCallBack& cb);
+	TimerId runAfter(double delay, const NetCallBacks::TimerCallBack& cb);
+	TimerId runEvery(double interval, const NetCallBacks::TimerCallBack& cb);
 
 	static EventLoop* getEventLoopOfCurrentThread();
 
@@ -53,8 +61,10 @@ private:
 	const pid_t m_threadId;
 	std::unique_ptr<Poller> m_poller;
 	std::unique_ptr<TimerQueue> m_timerQueue;
+	int m_wakeupFd;
 	ChannelList m_activeChannels;
-
+	MutexLock m_mutex;
+  std::vector<Functor> m_pendingFunctors; // @GuardedBy mutex_
 
 };
 

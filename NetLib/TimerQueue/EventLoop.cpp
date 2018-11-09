@@ -1,18 +1,35 @@
+#include <assert.h>
+#include <poll.h>
+#include <signal.h>
+#include <sys/eventfd.h>
+#include <unistd.h>
+
 #include "EventLoop.hh"
 #include "Poller.hh"
 #include "Logger.hh"
-#include <assert.h>
-#include <poll.h>
+#include "SocketHelp.hh"
 
 __thread EventLoop* t_loopInThisThread = 0;
 
 const int kPollTimeMs = 10000;
 
+int createEventfd()
+{
+  int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+  if (evtfd < 0)
+  {
+    LOG_SYSERR << "Failed in eventfd";
+    abort();
+  }
+  return evtfd;
+}
+
 EventLoop::EventLoop()
 	:m_looping(false),
   m_threadId(CurrentThread::tid()),
   m_poller(new Poller(this)),
-  m_timerQueue(new TimerQueue(this))
+  m_timerQueue(new TimerQueue(this)),
+  m_wakeupFd(createEventfd())
 {
   LOG_TRACE << "EventLoop Create " << this << " in thread " << m_threadId;
   if(t_loopInThisThread)
@@ -77,6 +94,19 @@ void EventLoop::runInLoop(const Functor&  cb)
   }
 }
 
+void EventLoop::queueInLoop(const Functor& cb)
+{
+  {
+    MutexLockGuard lock(m_mutex);
+    m_pendingFunctors.push_back(std::move(cb));
+  }
+
+  if(!isInloopThread() )//|| m_callingPendingFunctors)
+  {
+    wakeup();
+  }
+}
+
 EventLoop* EventLoop::getEventLoopOfCurrentThread()
 {
   return t_loopInThisThread;
@@ -94,21 +124,43 @@ void EventLoop::updateChannel(Channel* channel)
   assertInLoopThread();
   m_poller->updateChannel(channel);
 }
+void EventLoop::removeChannel(Channel* channel)
+{
+  (channel->ownerLoop() == this);
+  assertInLoopThread();
+  if(0)
+  {
+
+  }
+
+  m_poller->removeChannel(channel);
+}
 
 
-TimerId EventLoop::runAt(const TimeStamp& time, const NetCallBacks::TimerCallback& cb)
+TimerId EventLoop::runAt(const TimeStamp& time, const NetCallBacks::TimerCallBack& cb)
 {
   return m_timerQueue->addTimer(cb, time, 0.0);
 }
 
-TimerId EventLoop::runAfter(double delay, const NetCallBacks::TimerCallback& cb)
+TimerId EventLoop::runAfter(double delay, const NetCallBacks::TimerCallBack& cb)
 {
   TimeStamp time(addTime(TimeStamp::now(),delay));
   return runAt(time, cb);
 }
 
-TimerId EventLoop::runEvery(double interval, const NetCallBacks::& cb)
+TimerId EventLoop::runEvery(double interval, const NetCallBacks::TimerCallBack& cb)
 {
   TimeStamp time(addTime(TimeStamp::now(), interval));
   return m_timerQueue->addTimer(cb, time, interval);
+}
+
+
+void EventLoop::wakeup()
+{
+  uint64_t one = 1;
+  ssize_t n = sockets::write(m_wakeupFd, &one, sizeof one);
+  if(n != sizeof one)
+  {
+    LOG_ERROR << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
+  }
 }
