@@ -1,8 +1,26 @@
 #include <stdint.h>
+#include <assert.h>
+#include <sys/timerfd.h>
+#include <unistd.h>
 
+#include "Logger.hh"
 #include "TimerQueue.hh"
 
-TimerQueue::TimerQueue()
+int createTimerfd()
+{
+  int timerfd = ::timerfd_create(CLOCK_MONOTONIC,
+                                 TFD_NONBLOCK | TFD_CLOEXEC);
+  if (timerfd < 0)
+  {
+    LOG_SYSFATAL << "Failed in timerfd_create";
+  }
+  return timerfd;
+}
+
+TimerQueue::TimerQueue(EventLoop* loop)
+  :m_pLoop(loop),
+   m_timerfd(createTimerfd()),
+   m_timerfdChannel(m_pLoop, m_timerfd)
 {
 
 }

@@ -7,7 +7,15 @@
 
 class Timer{
 public:
-  Timer(const NetCallBacks::TimerCallback& cb, TimeStamp when, double interval);
+  Timer(const NetCallBacks::TimerCallback& cb, TimeStamp when, double interval)
+  :m_callBack(cb),
+  m_expiration(when),
+  m_interval(interval),
+  m_repeat(interval > 0.0),
+  m_sequence(s_numCreated.incrementAndGet())
+{
+
+}
 
   void run() const
   {
