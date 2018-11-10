@@ -2,6 +2,7 @@
 #define _TIME_STAMP_HH
 
 #include <stdint.h>
+#include <string>
 
 class TimeStamp {
 public:
@@ -26,6 +27,8 @@ public:
 // Get time of now.
 //
   static TimeStamp now();
+  
+  std::string toString() const;
 
   static TimeStamp invalid()
   {

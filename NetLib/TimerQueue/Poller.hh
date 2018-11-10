@@ -40,6 +40,7 @@ public:
   TimeStamp poll(int timeoutMs, ChannelList* activeChannels);
 
   void updateChannel(Channel* channel);
+  void removeChannel(Channel* channel);
 
   void assertInLoopThread() { m_pOwerLoop->assertInLoopThread(); }
 

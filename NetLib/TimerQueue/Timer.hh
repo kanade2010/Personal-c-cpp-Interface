@@ -7,7 +7,7 @@
 
 class Timer{
 public:
-  Timer(const NetCallBacks::TimerCallback& cb, TimeStamp when, double interval)
+  Timer(const NetCallBacks::TimerCallBack& cb, TimeStamp when, double interval)
   :m_callBack(cb),
   m_expiration(when),
   m_interval(interval),
@@ -33,7 +33,7 @@ private:
   Timer& operator=(const Timer&);
   Timer(const Timer&);
 
-  const NetCallBacks::TimerCallback m_callBack;
+  const NetCallBacks::TimerCallBack m_callBack;
   TimeStamp m_expiration;
   const double m_interval;
   const bool m_repeat;

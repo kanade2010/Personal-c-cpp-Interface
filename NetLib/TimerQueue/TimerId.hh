@@ -27,8 +27,8 @@ class TimerId
   friend class TimerQueue;
 
  private:
-  TimerId& operator=(const TimerId&);
-  TimerId(const TimerId&);
+  //TimerId& operator=(const TimerId&);
+  //TimerId(const TimerId&);
 
   Timer* m_timer;
   int64_t m_sequence;
