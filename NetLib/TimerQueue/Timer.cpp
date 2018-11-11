@@ -1,10 +1,12 @@
 #include "Timer.hh"
 
+AtomicInt64  Timer::s_numCreated;
+
 void Timer::restart(TimeStamp now)
 {
   if(m_repeat)
   {
-    m_expiration = addTime(now, m_interval);
+    m_expiration = times::addTime(now, m_interval);
   }
   else
   {

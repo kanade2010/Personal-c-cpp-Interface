@@ -144,13 +144,13 @@ TimerId EventLoop::runAt(const TimeStamp& time, const NetCallBacks::TimerCallBac
 
 TimerId EventLoop::runAfter(double delay, const NetCallBacks::TimerCallBack& cb)
 {
-  TimeStamp time(addTime(TimeStamp::now(),delay));
+  TimeStamp time(times::addTime(TimeStamp::now(), delay));
   return runAt(time, cb);
 }
 
 TimerId EventLoop::runEvery(double interval, const NetCallBacks::TimerCallBack& cb)
 {
-  TimeStamp time(addTime(TimeStamp::now(), interval));
+  TimeStamp time(times::addTime(TimeStamp::now(), interval));
   return m_timerQueue->addTimer(cb, time, interval);
 }
 

@@ -61,8 +61,9 @@ private:
 	const pid_t m_threadId;
 	std::unique_ptr<Poller> m_poller;
 	std::unique_ptr<TimerQueue> m_timerQueue;
-	int m_wakeupFd;
 	ChannelList m_activeChannels;
+
+	int m_wakeupFd;
 	MutexLock m_mutex;
   std::vector<Functor> m_pendingFunctors; // @GuardedBy mutex_
 

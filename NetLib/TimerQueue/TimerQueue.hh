@@ -17,9 +17,9 @@ public:
 
   // Schedules the callback to be run at given time,
 
-  TimerId addTimer(const NetCallBacks::TimerCallBack& cb, TimeStamp when, double interval);
+  TimerId addTimer(const NetCallBacks::TimerCallBack& cb, TimeStamp when, double interval = 0.0);
 
-  //void cancel(TimerId timerId);
+  void cancel(TimerId timerId);
 
 private:
   typedef std::pair<TimeStamp, Timer*> Entry;
@@ -31,18 +31,21 @@ private:
   void cancelInLoop(TimerId timerId);
   //called when timerfd alarms
   void handleRead();
-  //move out all expired timers
+  //move out all expired timers and return they.
   std::vector<Entry> getExpired(TimeStamp now);
-  void reset(const std::vector<Entry>& expired, TimeStamp now);
-
   bool insert(Timer* timer);
+  void reset(const std::vector<Entry>& expired, TimeStamp now);
 
   EventLoop* p_loop;
   const int m_timerfd;
   Channel m_timerfdChannel;
+
   //Timer List sorted by expiration
   TimerList m_timers;
   ActiveTimerSet m_activeTimers;
+
+  bool m_callingExpiredTimers; /*atomic*/
+  ActiveTimerSet m_cancelingTimers;
 
 };
 
