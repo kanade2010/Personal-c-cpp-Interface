@@ -53,13 +53,101 @@ int main()
 }
 
 */
-*
+
+/*
+
+#include <thread>
 
 
+class share_test
+{
+public:
+      share_test(){num++; printf("construct...%d\n", num);}
+      ~share_test(){printf("~deconstruct...\n" );}
+      static int getnum() {return num;}
+private:
+      static int num;
+};
+
+int share_test::num = 0;
+
+void static_num_test()
+{
+      int i =100000;
+      while(i--)   std::shared_ptr<share_test> s1(new share_test);
+}
 
 int main()
 {
+  std::shared_ptr<share_test> s1(new share_test);
 
+  std::shared_ptr<share_test> s2(new share_test);
+
+  std::thread t(static_num_test);
+  std::thread t1(static_num_test);
+  std::thread t2(static_num_test);
+
+  int i =100000;
+  while(i--)   std::shared_ptr<share_test> s3(new share_test);
+
+  t.join();
+  t1.join();
+  t2.join();
+
+  printf("%d\n", share_test::getnum());
+getchar();
+
+  return 0;
+}
+*/
+
+
+
+class share_test : public std::enable_shared_from_this<share_test>
+{
+public:
+      share_test(int m):member(m) { printf("construct...\n");}
+      ~share_test(){printf("~deconstruct...\n" );}
+      int getmember() { return member; } 
+      std::shared_ptr<share_test> getSp() { return std::shared_ptr<share_test>(this); }
+      std::shared_ptr<share_test> getSpByShareFromThis() { return shared_from_this();}
+private:
+  int member;
+};
+
+int main()
+{
+  std::shared_ptr<share_test> s1(new share_test(1));
+
+  std::shared_ptr<share_test> s2 = s1;
+
+  printf("use_count : %d  | member : %d\n", s1.use_count(), s1->getmember());
+
+  std::shared_ptr<share_test> s3(s1);
+
+  printf("use_count : %d  | member : %d\n", s3.use_count(), s3->getmember());
+
+
+//test  getSp() shared_ptr
+
+  std::shared_ptr<share_test> s4 = s3->getSp();
+
+  printf("use_count : %d  | member : %d\n", s3.use_count(), s3->getmember());
+  printf("use_count : %d  | member : %d\n", s4.use_count(), s4->getmember());
+
+  s3.reset();
+
+  printf("use_count : %d  \n", s3.use_count());//, s3->getmember());
+  printf("use_count : %d  | member : %d\n", s4.use_count(), s4->getmember());
+
+//test getSpByShareFromThis()
+
+
+  std::shared_ptr<share_test> s5(new share_test(2));
+  std::shared_ptr<share_test> s6 = s5->getSpByShareFromThis();
+  printf("use_count : %d  | member : %d\n", s5.use_count(), s5->getmember());
+  printf("use_count : %d  | member : %d\n", s6.use_count(), s6->getmember());
+getchar();
 
   return 0;
 }
