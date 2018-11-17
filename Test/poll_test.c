@@ -8,8 +8,7 @@
 #include <poll.h>
 
 #define MAX_BUFFER_SIZE 1024
-#define IN_FILES 3
-#define TIME_DELAY 60*5
+#define IN_FILES 1
 #define MAX(a,b) ((a>b)?(a):(b))
 
 int main(int argc ,char **argv)
@@ -21,18 +20,6 @@ int main(int argc ,char **argv)
   if((fds[0].fd=open("/dev/stdin",O_RDONLY|O_NONBLOCK)) < 0)
   {
     fprintf(stderr,"open data1 error:%s",strerror(errno));
-    return 1;
-  }
-
-  if((fds[1].fd=open("data1",O_RDONLY|O_NONBLOCK)) < 0)
-  {
-    fprintf(stderr,"open data1 error:%s",strerror(errno));
-    return 1;
-  }
-
-  if((fds[2].fd=open("data2",O_RDONLY|O_NONBLOCK)) < 0)
-  {
-    fprintf(stderr,"open data2 error:%s",strerror(errno));
     return 1;
   }
 
