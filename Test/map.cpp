@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdint.h>
 
-/*
+
 std::map<int, std::string>::value_type init_value[] =
 {
   std::map<int, std::string>::value_type(0, "GET"),
@@ -14,7 +14,7 @@ std::map<int, std::string>::value_type init_value[] =
 std::map<int, std::string> m_strs(init_value, init_value + (sizeof init_value / sizeof init_value[0]));
 
 
-int mian()
+int main()
 {
   std::map<int, std::string> StringMap;
 
@@ -22,10 +22,12 @@ int mian()
 
   std::cout << " std: " << str->second << std::endl;
 
+  std::cout << StringMap[2];
+
   return 0;
 }
 
-*/
+
 /*
 //#include <utility>
 #include <set>
@@ -52,13 +54,13 @@ int main()
 {
 
   std::set<int> myset = { 50, 20, 60, 10, 25 ,10, 10};
- 
+
   std::cout << "myset contains:";
   for (std::set<int>::const_iterator it = myset.begin(); it != myset.end(); ++it)
     std::cout << ' ' << *it ;
 
   std::cout << std::endl;;
- 
+
   std::set<int>::iterator it = myset.lower_bound(20);
   std::cout << *it << std::endl;
 
@@ -67,7 +69,7 @@ int main()
 }
 
 */
-
+/*
 typedef std::pair<int, uintptr_t> test_t;
 typedef std::set<test_t> test_t_List;
 
@@ -94,4 +96,4 @@ int main()
   std::cout << std::endl;
 
   return 0;
-}
+}*/
