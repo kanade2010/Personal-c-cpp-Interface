@@ -14,12 +14,98 @@
 #include "Buffer.hh"
 #include "HttpRequest.hh"
 
+const HttpUrl image("http://img.zcool.cn/community/01ddc256eb71586ac7257d209712b7.jpg@1280w_1l_2o_100sh.jpg");
+const HttpUrl xml("https://usglmycar.x431.com/services/publicSoftService");
+std::string xmlIp;
+std::string imageIp;
+
+const std::string kTestContent = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:x431=\"http://www.x431.com\"><soapenv:Header/><soapenv:Body><x431:getPublicSoftMaxVersionByName><serialNo>978290000089</serialNo><publicSoftName>Gtbox_Mini_main_app_DB</publicSoftName><versionNo>1.00.002</versionNo><displayLan>CN</displayLan></x431:getPublicSoftMaxVersionByName></soapenv:Body></soapenv:Envelope>";
+
+
+class HttpProtocol
+{
+public:
+  enum MethodE{GET, POST};
+
+  HttpProtocol();
+  ~HttpProtocol();
+
+  void setRequestMethod(const std::string &method, const HttpUrl& url);
+  void setRequestProperty(const std::string &key, const std::string &value);
+  void setRequestBody(const std::string &content);
+
+  Buffer* buffer() { return &m_buffer; }
+
+private:
+  static std::map<std::string, int> kRequestMethods;
+
+  Buffer m_buffer;
+};
+
+const std::map<std::string, int>::value_type init_value[] =
+{
+  std::map<std::string, int>::value_type( "GET", HttpProtocol::GET),
+
+  std::map<std::string, int>::value_type( "POST", HttpProtocol::POST)
+};
+
+std::map<std::string, int> HttpProtocol::kRequestMethods(init_value, init_value + (sizeof init_value / sizeof init_value[0]));
+
+ HttpProtocol::HttpProtocol()
+ {
+
+ }
+
+HttpProtocol::~HttpProtocol()
+{
+
+}
+
+void HttpProtocol::setRequestMethod(const std::string &method, const HttpUrl& url)
+{
+  switch(HttpProtocol::kRequestMethods.at(method))
+  {
+    case HttpProtocol::GET :
+      m_buffer << "GET " << "/" << url.uri() << " HTTP/1.1\r\n";
+      break;
+    case HttpProtocol::POST :
+      m_buffer << "POST "  << "/" << url.uri() << " HTTP/1.1\r\n";
+      break;
+    default :
+      LOG_ERROR << "No such Method : " << method.c_str();
+      break;
+  }
+
+  m_buffer << "Host: " << url.domain() << "\r\n";
+}
+
+
+void HttpProtocol::setRequestProperty(const std::string &key, const std::string &value)
+{
+  m_buffer << key << ": " << value << "\r\n";
+}
+
+void HttpProtocol::setRequestBody(const std::string &content)
+{
+  m_buffer << content;
+}
+
+
 EventLoop* g_loop;
 
 void newConnetion(const TcpConnectionPtr& conn)
 {
-  LOG_DEBUG << "newConnetion() : Connected a new connection.";
-  conn->send("img.zcool.cn");
+  HttpProtocol httpStream;
+
+  httpStream.setRequestMethod("POST", xml);
+  httpStream.setRequestProperty("Content-type", "text/xml;charset=UTF-8");
+  httpStream.setRequestProperty("Cache-Control", "no-cache");
+  httpStream.setRequestProperty("Connection", "close");
+  httpStream.setRequestProperty("Content-Length", std::to_string(kTestContent.size()) + "\r\n");
+  httpStream.setRequestBody(kTestContent);
+
+  conn->send(httpStream.buffer());
+
 }
 
 void onMessage(const TcpConnectionPtr& conn, Buffer* buf, ssize_t len)
@@ -38,14 +124,13 @@ void runLoop()
 
 void downImage()
 {
-  HttpUrl url("http://img.zcool.cn/community/01ddc256eb71586ac7257d209712b7.jpg@1280w_1l_2o_100sh.jpg");
-  std::string ip = url.toIp();
-  LOG_DEBUG << "toIp : " << ip;
+  imageIp = image.toIp();
+  LOG_DEBUG << "toIp : " << imageIp;
 
-  InetAddress serverAddr(ip, 80);
+  InetAddress serverAddr(imageIp, 80);
 
   HttpRequest httpReq(g_loop, serverAddr);
-  httpReq.setRequestMethod("GET", url);
+  httpReq.setRequestMethod("GET", image);
   httpReq.setRequestProperty("Cache-Control", "no-cache");
   httpReq.setRequestProperty("Content-Type", "application/octet-stream");
   httpReq.setRequestProperty("Connection", "close\r\n");
@@ -57,16 +142,19 @@ void downImage()
 
 int main()
 {
+  xmlIp = xml.toIp();
+  LOG_DEBUG << "xmlIp : " << xmlIp;
+
   std::thread t(runLoop);
 
   getchar();
 
-  InetAddress serverAddr("119.29.29.29", 53);
-  TcpClient cli(g_loop, serverAddr);
-  cli.setConnectionCallBack(newConnetion);
-  cli.setMessageCallBack(onMessage);
+  TcpClient httpReq(g_loop, InetAddress(xmlIp, 80));
 
-  cli.start();
+  httpReq.setConnectionCallBack(newConnetion);
+  httpReq.setMessageCallBack(onMessage);
+
+  httpReq.start();
 
   //std::thread t(runLoop);
 

@@ -10,7 +10,7 @@
 TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr)
   :p_loop(loop),
   m_isConnectd(false),
-  m_enRetry(true),
+  m_enRetry(false),
   p_connector(new Connector(loop, serverAddr))
 {
   LOG_TRACE << "ctor[" << this << "]";

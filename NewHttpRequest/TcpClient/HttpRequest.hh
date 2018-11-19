@@ -122,7 +122,7 @@ public:
 		assert(m_haveHandleHead);
 		return std::string(m_buffer.peek(), m_buffer.readableBytes());
 	}
-	
+
 	void connect() { p_tcpClient->start(); } ;
 	void send();
 
