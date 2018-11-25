@@ -86,6 +86,7 @@ void ask_ip(int sock,char * name,char show)
         printf("\n长度:%d\n",i);
     }
     sendto(sock, sendbuf, i, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    //write(sock, sendbuf, i);
     ret = recvfrom(sock, recvbuf, sizeof(recvbuf), 0, NULL, NULL);
     if (ret == -1)
     {
