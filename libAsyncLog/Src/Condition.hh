@@ -9,7 +9,7 @@ public:
   explicit Condition(std::mutex &mutex);
   ~Condition();
   void wait(std::unique_lock<std::mutex>& lock);
-  void waitForSeconds(double seconds);
+  void waitForSeconds(std::unique_lock<std::mutex>& lock, double seconds);
   void notify();
   void notifyAll();
 private:
