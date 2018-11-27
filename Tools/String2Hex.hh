@@ -25,6 +25,7 @@ public:
 	}
 	~String2Hex(){}
 
+  int peek32(){ int be32 = 0; be32 = (m_buffer[0] << 24) + (m_buffer[1] << 16) + (m_buffer[2] << 8) + (m_buffer[0]); return be32; } 
 	unsigned char* hex() {return m_buffer;}
 	std::string& str() {return m_str;}
 	size_t size() {return m_size;}
