@@ -64,7 +64,7 @@ public:
     assert(len <= readableBytes());
     m_writerIndex -= len;
   }
-
+  
   // retrieve returns void, to prevent
   // string str(retrieve(readableBytes()), readableBytes());
   // the evaluation of two functions are unspecified

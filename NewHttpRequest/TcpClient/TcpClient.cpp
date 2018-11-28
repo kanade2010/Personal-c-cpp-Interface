@@ -34,6 +34,16 @@ void TcpClient::connect()
   p_connector->start();
 }
 
+void TcpClient::disconnect()
+{
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if(p_connection)
+    {
+      p_connection->shutdown();
+    }
+  }
+}
 
 void TcpClient::newConnetion(int sockfd)
 {
@@ -41,6 +51,7 @@ void TcpClient::newConnetion(int sockfd)
   p_loop->assertInLoopThread();
 
   InetAddress localAddr(sockets::getLocalAddr(sockfd));
+
   InetAddress peerAddr(sockets::getPeerAddr(sockfd));
   char buf[64];
   snprintf(buf, sizeof buf, ":%s", peerAddr.toIpPort().c_str());
@@ -53,7 +64,7 @@ void TcpClient::newConnetion(int sockfd)
   conn->setCloseCallBack(std::bind(&TcpClient::removeConnection, this, std::placeholders::_1));
 
   {
-    MutexLockGuard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     p_connection = conn;
     m_isConnectd = true;
   }
@@ -68,7 +79,7 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
   assert(p_loop == conn->getLoop());
 
   {
-    MutexLockGuard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     assert(p_connection  == conn);
     p_connection.reset();
     m_isConnectd = false;

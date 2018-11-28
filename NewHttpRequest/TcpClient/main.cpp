@@ -2,6 +2,7 @@
 #include <thread>
 #include <strings.h>
 #include <poll.h>
+#include <netdb.h>
 #include "EventLoop.hh"
 #include "Channel.hh"
 #include "Poller.hh"
@@ -12,153 +13,174 @@
 #include "TcpClient.hh"
 #include "TcpConnection.hh"
 #include "Buffer.hh"
-#include "HttpRequest.hh"
-
-const HttpUrl image("http://img.zcool.cn/community/01ddc256eb71586ac7257d209712b7.jpg@1280w_1l_2o_100sh.jpg");
-const HttpUrl xml("https://usglmycar.x431.com/services/publicSoftService");
-std::string xmlIp;
-std::string imageIp;
-
-const std::string kTestContent = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:x431=\"http://www.x431.com\"><soapenv:Header/><soapenv:Body><x431:getPublicSoftMaxVersionByName><serialNo>978290000089</serialNo><publicSoftName>Gtbox_Mini_main_app_DB</publicSoftName><versionNo>1.00.002</versionNo><displayLan>CN</displayLan></x431:getPublicSoftMaxVersionByName></soapenv:Body></soapenv:Envelope>";
+#include "EventLoopThread.hh"
+#include "Connector.hh"
+#include "ThreadPool.hh"
 
 
-class HttpProtocol
+class HttpUrl
 {
 public:
-  enum MethodE{GET, POST};
-
-  HttpProtocol();
-  ~HttpProtocol();
-
-  void setRequestMethod(const std::string &method, const HttpUrl& url);
-  void setRequestProperty(const std::string &key, const std::string &value);
-  void setRequestBody(const std::string &content);
-
-  Buffer* buffer() { return &m_buffer; }
-
-private:
-  static std::map<std::string, int> kRequestMethods;
-
-  Buffer m_buffer;
-};
-
-const std::map<std::string, int>::value_type init_value[] =
-{
-  std::map<std::string, int>::value_type( "GET", HttpProtocol::GET),
-
-  std::map<std::string, int>::value_type( "POST", HttpProtocol::POST)
-};
-
-std::map<std::string, int> HttpProtocol::kRequestMethods(init_value, init_value + (sizeof init_value / sizeof init_value[0]));
-
- HttpProtocol::HttpProtocol()
- {
-
- }
-
-HttpProtocol::~HttpProtocol()
-{
-
-}
-
-void HttpProtocol::setRequestMethod(const std::string &method, const HttpUrl& url)
-{
-  switch(HttpProtocol::kRequestMethods.at(method))
+  HttpUrl(const std::string& url)
+  :m_httpUrl(url),
+   m_smatch(detachHttpUrl())
   {
-    case HttpProtocol::GET :
-      m_buffer << "GET " << "/" << url.uri() << " HTTP/1.1\r\n";
-      break;
-    case HttpProtocol::POST :
-      m_buffer << "POST "  << "/" << url.uri() << " HTTP/1.1\r\n";
-      break;
-    default :
-      LOG_ERROR << "No such Method : " << method.c_str();
-      break;
+    LOG_DEBUG << "URL : " << m_httpUrl;
+  }
+  ~HttpUrl(){};
+
+  enum HttpUrlMatch
+  {
+    URL = 0,
+    HOST = 1,
+    URI = 2
+  };
+
+  std::vector<std::string> detachHttpUrl() const
+  {
+    std::vector<std::string> v;
+    std::string::size_type pos1, pos2;
+    pos2 = m_httpUrl.find('/');
+    assert(std::string::npos != pos2);
+    pos1 = pos2 + 2;
+    pos2 = m_httpUrl.find('/', pos1);
+    assert(std::string::npos != pos2);
+    v.push_back(m_httpUrl);
+    v.push_back(m_httpUrl.substr(pos1, pos2 - pos1));
+    v.push_back(m_httpUrl.substr(pos2 + 1));
+    LOG_DEBUG << "detachHttpUrl() url :" << v[0];
+    LOG_DEBUG << "detachHttpUrl() host :" << v[1];
+    LOG_DEBUG << "detachHttpUrl() uri :" << v[2];
+    return v;
   }
 
-  m_buffer << "Host: " << url.domain() << "\r\n";
-}
+  std::string toIp()
+  {
+    struct hostent* phost = NULL;
+    char ip[32] = {0};
 
+    phost = gethostbyname(domain().c_str());
+    if (NULL == phost)
+    {
+      LOG_ERROR << "HttpUrlToIp(): gethostbyname error : " << errno << " : "<< strerror(errno);
+      return "";
+      //LOG_SYSERR << "urlToIp(): gethostbyname error";
+    }
 
-void HttpProtocol::setRequestProperty(const std::string &key, const std::string &value)
-{
-  m_buffer << key << ": " << value << "\r\n";
-}
+    inet_ntop(phost->h_addrtype,  phost->h_addr, ip, sizeof ip);
 
-void HttpProtocol::setRequestBody(const std::string &content)
-{
-  m_buffer << content;
-}
+    m_ip = ip;
+
+    return ip;
+  }
+
+  std::string domain() const { return getHttpUrlSubSeg(HOST); }
+
+  std::string ip() const { return m_ip; }
+
+  std::string uri() const { return getHttpUrlSubSeg(URI); }
+
+private:
+  std::string getHttpUrlSubSeg(HttpUrlMatch sub = HOST) const{ return m_smatch[sub]; }
+
+  std::string m_httpUrl;
+  std::string m_ip;
+  std::vector<std::string> m_smatch;
+};
+
 
 
 EventLoop* g_loop;
 
 void newConnetion(const TcpConnectionPtr& conn)
 {
-  HttpProtocol httpStream;
-
-  httpStream.setRequestMethod("POST", xml);
-  httpStream.setRequestProperty("Content-type", "text/xml;charset=UTF-8");
-  httpStream.setRequestProperty("Cache-Control", "no-cache");
-  httpStream.setRequestProperty("Connection", "close");
-  httpStream.setRequestProperty("Content-Length", std::to_string(kTestContent.size()) + "\r\n");
-  httpStream.setRequestBody(kTestContent);
-
-  conn->send(httpStream.buffer());
-
+  LOG_DEBUG << "newConnetion() : Connected a new connection.";
+  char data[] = {0x61, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x77, 0x77, 0x77, 0x05, 0x62, 0x61, 0x69, 0x64, 0x75, 0x03, 0x63, 0x6f, 0x6d, 0x00, 0x00, 0x01, 0x00, 0x01};
+  conn->send(data, sizeof data);
 }
 
 void onMessage(const TcpConnectionPtr& conn, Buffer* buf, ssize_t len)
 {
   LOG_DEBUG << "onMessage() : received " << buf->readableBytes() << " Bytes from connection [" << conn->name();
-  LOG_DEBUG << "onMessage : " << buf->retrieveAsString(len);
+//  LOG_DEBUG << "onMessage : " << buf->retrieveAsString(len);
+
+  /*
+  for(int i =0 ; i < len; i++ ){
+    printf("%4d ", *(buf->peek()));
+    buf->retrieve(1);
+  }*/
+
+  conn->send(buf->peek(), buf->readableBytes());
+
+  buf->retrieve(buf->readableBytes());
 
 }
 
-void runLoop()
+
+
+
+std::mutex g_urlMutex;
+Condition g_urlCond;
+
+void domainToIpTask(HttpUrl* url)
 {
-  EventLoop loop;
-  g_loop = &loop;
-  g_loop->loop();
+  std::string ip;
+  int cnt = 0;
+
+  std::unique_lock<std::mutex> lock(g_urlMutex);
+  while(ip.empty() && cnt < 10){
+    std::this_thread::sleep_for(std::chrono::seconds(4));
+    ip = url->toIp();
+    cnt++;
+    LOG_TRACE << "domainToIpTask() get ip is " << url->ip();
+  }
+
+  g_urlCond.notify();
+
 }
 
-void downImage()
-{
-  imageIp = image.toIp();
-  LOG_DEBUG << "toIp : " << imageIp;
-
-  InetAddress serverAddr(imageIp, 80);
-
-  HttpRequest httpReq(g_loop, serverAddr);
-  httpReq.setRequestMethod("GET", image);
-  httpReq.setRequestProperty("Cache-Control", "no-cache");
-  httpReq.setRequestProperty("Content-Type", "application/octet-stream");
-  httpReq.setRequestProperty("Connection", "close\r\n");
-
-  LOG_DEBUG << "Http Message : \n" << httpReq.peek();
-
-  httpReq.connect();
-}
 
 int main()
 {
-  xmlIp = xml.toIp();
-  LOG_DEBUG << "xmlIp : " << xmlIp;
 
-  std::thread t(runLoop);
+  ThreadPool threadPool;
+  threadPool.start();
 
-  getchar();
+  HttpUrl image("http://img.zcool.cn/community/01ddc256eb71586ac7257d209712b7.jpg@1280w_1l_2o_100sh.jpg");
 
-  TcpClient httpReq(g_loop, InetAddress(xmlIp, 80));
+  threadPool.addTask(std::bind(domainToIpTask, &image));
 
-  httpReq.setConnectionCallBack(newConnetion);
-  httpReq.setMessageCallBack(onMessage);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 
-  httpReq.start();
+  {
+    std::unique_lock<std::mutex> lock(g_urlMutex);
+    while(image.ip().empty())
+    {
+      g_urlCond.wait(lock);
+    }
+  }
 
-  //std::thread t(runLoop);
+  if(image.ip().empty())
+  {
+    LOG_DEBUG << "domainToIpTask() failed exit.";
+    return 0;
+  }
 
-  //cli.connection()->send("img.zcool.cn");
+  LOG_DEBUG << image.domain() << " : " << image.ip();
+
+/*
+  EventLoopThread loopThread;
+
+  InetAddress serverAddr(image.ip(), 80);
+
+
+  TcpClient client(loopThread.startLoop(), serverAddr);
+
+
+  client.setConnectionCallBack(newConnetion);
+  client.setMessageCallBack(onMessage);
+  client.start();
+*/
 
   getchar();
 }

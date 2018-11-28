@@ -63,7 +63,6 @@ EventLoop::~EventLoop()
 
 void EventLoop::loop()
 {
-  LOG_TRACE << "EventLoop::loop()";
   assert(!m_looping);
   assertInLoopThread();
   m_looping = true;
@@ -75,6 +74,7 @@ void EventLoop::loop()
   {
     m_activeChannels.clear();
     m_poller->poll(kPollTimeMs, &m_activeChannels);
+
     printActiveChannels();
 
     for(ChannelList::iterator it = m_activeChannels.begin();
@@ -106,7 +106,7 @@ void EventLoop::queueInLoop(const Functor& cb)
 {
   LOG_TRACE << "EventLoop::queueInLoop()";
   {
-    MutexLockGuard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_pendingFunctors.push_back(std::move(cb));
   }
 
@@ -118,8 +118,6 @@ void EventLoop::queueInLoop(const Functor& cb)
 
 void EventLoop::wakeup()
 {
-  LOG_TRACE << "EventLoop::wakeup()";
-
   uint64_t one = 1;
   ssize_t n = sockets::write(m_wakeupFd, &one, sizeof one);
   if(n != sizeof one)
@@ -146,7 +144,7 @@ void EventLoop::doPendingFunctors()
   m_callingPendingFunctors = true;
 
   {
-    MutexLockGuard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     functors.swap(m_pendingFunctors);
   }
 

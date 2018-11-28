@@ -4,7 +4,7 @@
 /*#include <sys/uio.h>
 #include <iostream>*/
 
-const ssize_t kExtraBufferSize = 4096;
+const ssize_t kExtraBufferSize = 20480;
 
 const char Buffer::kCRLF[] = "\r\n";
 const size_t Buffer::kCheapPrepend;
