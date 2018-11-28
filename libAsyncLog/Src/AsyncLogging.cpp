@@ -53,9 +53,9 @@ void AsyncLogging::threadRoutine(){
 		assert(buffersToWrite.empty());
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
-			if(m_buffers.empty()){printf("111\n");
+			if(m_buffers.empty()){
 				m_cond.waitForSeconds(lock, m_flushInterval);
-			}printf("222\n");
+			}
 			m_buffers.push_back(m_currentBuffer.release());
 			m_currentBuffer = std::move(backupBuffer1);
 			m_buffers.swap(buffersToWrite);

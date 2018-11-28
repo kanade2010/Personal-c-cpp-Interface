@@ -60,7 +60,7 @@ void ptintTime()
 
 		Fmt us(".%06d ", microseconds);
 		assert(us.length() == 8);
-		printf(":%s\n", us.data());
+		printf("%s\n", us.data());
 
 }
 
@@ -73,7 +73,6 @@ int main(){
 	Logger::setOutput(asyncOutput);
 	Logger::setFlush(AsyncFlush);
 
-	LOG_DEBUG << "????";
 	ptintTime();
 //	sleep(1);
 	for(int j = 0 ; j < 1 ; ++j){
