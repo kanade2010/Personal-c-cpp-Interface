@@ -10,7 +10,7 @@ AsyncLogging::AsyncLogging(const std::string filePath, off_t rollSize, double fl
 	 m_isRunning(false),
 	 m_thread(std::bind(&AsyncLogging::threadRoutine, this)),
 	 m_mutex(),
-	 m_cond(m_mutex),
+	 m_cond(),
 	 m_currentBuffer(new Buffer),
 	 m_nextBuffer(new Buffer),
 	 m_buffers()
