@@ -21,6 +21,13 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr)
 TcpClient::~TcpClient()
 {
   LOG_TRACE << "dtor[" << this << "]";
+  TcpConnectionPtr conn;
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    conn = p_connection;
+    conn->forceClose();
+  }
+
 }
 
 void TcpClient::start()

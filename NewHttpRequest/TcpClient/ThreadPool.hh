@@ -22,7 +22,7 @@ public:
 
   void start();
   void stop();
-  void addTask(const Task&);
+  void addTask(const Task&);  //thread safe;
   void addTask(const TaskPair&);
 
 private:

@@ -56,17 +56,17 @@ void TcpConnection::connectEstablished()
 
 }
 
-void TcpConnection::send(const void* data, int len)
+void TcpConnection::send(const void* message, size_t len)
 {
   if(m_state == kConnected)
   {
     if(p_loop->isInloopThread())
     {
-      sendInLoop(data, len);
+      sendInLoop(message, len);
     }
     else
     {
-      p_loop->runInLoop(std::bind(&TcpConnection::sendInLoop, this, data, len));
+      p_loop->runInLoop(std::bind(&TcpConnection::sendInLoop, this, message, len));
     }
   }
 }
@@ -105,6 +105,8 @@ void TcpConnection::send(Buffer* message)
 
 void TcpConnection::sendInLoop(const void* data, size_t len)
 {
+  LOG_TRACE << "TcpConnection::sendInLoop() " << len << " Bytes : \n" << data;
+
   p_loop->assertInLoopThread();
   ssize_t nwrote = 0;
   size_t remaining = len;
@@ -249,7 +251,7 @@ void TcpConnection::handleClose()
   LOG_TRACE << "TcpConnection::handleClose()";
   p_loop->assertInLoopThread();
   LOG_TRACE << "fd = " << p_channel->fd() << " state = " << stateToString();
-  assert(m_state == kConnected );//|| m_state == kDisConnecting);
+  assert(m_state == kConnected || m_state == kDisConnecting);
 
   setState(kDisConnected);
   p_channel->disableAll();
@@ -275,6 +277,26 @@ void TcpConnection::connectDestroyed()
   }
 
   p_channel->remove();
+}
+
+void TcpConnection::forceClose()
+{
+  // FIXME: use compare and swap
+  if (m_state == kConnected || m_state == kDisConnecting)
+  {
+    setState(kDisConnecting);
+    p_loop->queueInLoop(std::bind(&TcpConnection::forceCloseInLoop, shared_from_this()));
+  }
+}
+
+void TcpConnection::forceCloseInLoop()
+{
+  p_loop->assertInLoopThread();
+  if (m_state == kConnected || m_state == kDisConnecting)
+  {
+    // as if we received 0 byte in handleRead();
+    handleClose();
+  }
 }
 
 const char* TcpConnection::stateToString() const

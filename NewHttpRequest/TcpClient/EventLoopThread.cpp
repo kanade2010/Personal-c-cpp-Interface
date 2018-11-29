@@ -16,9 +16,11 @@ EventLoopThread::EventLoopThread()
 
 EventLoopThread::~EventLoopThread()
 {
+  LOG_TRACE << "EventLoopThread::~EventLoopThread()";
+
   m_exiting = true;
-  if(p_loop !=NULL)
-  {
+  if(p_loop != NULL)
+  {  
     p_loop->quit();
     m_thread.join();
   }

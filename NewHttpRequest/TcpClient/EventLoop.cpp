@@ -11,7 +11,7 @@
 
 __thread EventLoop* t_loopInThisThread = 0;
 
-const int kPollTimeMs = 10000;
+const int kPollTimeMs = 1000;
 
 int createEventfd()
 {
@@ -65,8 +65,8 @@ void EventLoop::loop()
 {
   assert(!m_looping);
   assertInLoopThread();
-  m_looping = true;
   m_quit = false;
+  m_looping = true;
 
   LOG_TRACE << "EventLoop " << this << " start loopig";
 
@@ -83,6 +83,7 @@ void EventLoop::loop()
       (*it)->handleEvent();
     }
     doPendingFunctors();
+    LOG_TRACE << "EventLoop [" << this << "] EventLoop::loop() quit status : " << m_quit;
   }
 
   LOG_TRACE << "EventLoop " << this << " stop loopig";
@@ -171,8 +172,14 @@ EventLoop* EventLoop::getEventLoopOfCurrentThread()
 
 void EventLoop::quit()
 {
+  assert(m_looping == true);
+
   m_quit = true;
-  //wakeup();
+
+  if(!isInloopThread())
+  {
+    wakeup();
+  }
 }
 
 void EventLoop::updateChannel(Channel* channel)

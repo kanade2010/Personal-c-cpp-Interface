@@ -124,6 +124,7 @@ void Poller::removeChannel(Channel* channel)
     m_channels[channelAtEnd]->set_index(idx);
     m_pollfds.pop_back();
   }
+  
 }
 
 
