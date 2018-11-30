@@ -21,11 +21,29 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr)
 TcpClient::~TcpClient()
 {
   LOG_TRACE << "dtor[" << this << "]";
+  LOG_TRACE << "TcpConnection use count " << p_connection.use_count();
+
   TcpConnectionPtr conn;
+  bool unique = false;
   {
     std::lock_guard<std::mutex> lock(m_mutex);
+    unique = p_connection.unique();
+    LOG_TRACE << "TcpConnection use count " << p_connection.use_count() << " unique " << unique;
     conn = p_connection;
-    conn->forceClose();
+    LOG_TRACE << "TcpConnection use count " << p_connection.use_count() << " unique " << unique;
+
+  }
+
+  if(conn)
+  {
+    if(unique)
+    {
+      conn->forceClose();
+    }
+  }
+  else
+  {
+      p_connector->stop();
   }
 
 }
@@ -51,6 +69,13 @@ void TcpClient::disconnect()
     }
   }
 }
+
+void TcpClient::stop()
+{
+  m_isConnectd = false;
+  p_connector->stop();
+}
+
 
 void TcpClient::newConnetion(int sockfd)
 {

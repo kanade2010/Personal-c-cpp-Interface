@@ -165,6 +165,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
 
 void TcpConnection::shutdown()
 {
+  LOG_TRACE << "TcpConnection::shutdown()";
   if(m_state == kConnected)
   {
     setState(kDisConnecting);
@@ -281,6 +282,7 @@ void TcpConnection::connectDestroyed()
 
 void TcpConnection::forceClose()
 {
+  LOG_TRACE << "TcpConnection::forceClose()";
   // FIXME: use compare and swap
   if (m_state == kConnected || m_state == kDisConnecting)
   {

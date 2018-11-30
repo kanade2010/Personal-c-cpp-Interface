@@ -49,9 +49,7 @@ void Channel::handleEvent()
 
   if ((m_revents & POLLHUP) && !(m_revents & POLLIN))
   {
-    if(true){
-      LOG_WARN << "fd = " << m_fd << " Channel::handle_event() POLLHUP";
-    }
+    LOG_WARN << "fd = " << m_fd << " Channel::handle_event() POLLHUP";
     if (m_closeCallBack) m_closeCallBack();
   }
 

@@ -91,6 +91,21 @@ void EventLoop::loop()
 
 }
 
+bool EventLoop::isInloopThread() const 
+{
+  LOG_TRACE << "EventLoopThread::isInloopThread()";
+  return m_threadId == CurrentThread::tid();
+}
+
+void EventLoop::assertInLoopThread()
+{
+  LOG_TRACE << "EventLoop::assertInLoopThread()";
+  if(!isInloopThread())
+  {
+    abortNotInLoopThread();
+  }
+}
+
 void EventLoop::runInLoop(const Functor&  cb)
 {
   if(isInloopThread())
@@ -149,6 +164,8 @@ void EventLoop::doPendingFunctors()
     functors.swap(m_pendingFunctors);
   }
 
+  LOG_TRACE << "EventLoop::doPendingFunctors() functors.size() " << functors.size();
+
   for(size_t i = 0; i < functors.size(); ++i)
   {
     functors[i]();
@@ -172,6 +189,7 @@ EventLoop* EventLoop::getEventLoopOfCurrentThread()
 
 void EventLoop::quit()
 {
+  LOG_TRACE << "EventLoop::quit()";
   assert(m_looping == true);
 
   m_quit = true;

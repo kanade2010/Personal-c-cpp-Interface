@@ -54,7 +54,7 @@ void downloadFileThread(const TcpConnectionPtr& conn, Buffer* buffer, ssize_t le
   if(g_downSize == 155984)
   {
     g_downLoadFlag = true;
-    conn->shutdown();
+    LOG_TRACE << "downloadFileThread conn use count " << conn.use_count();  
     g_imageCond.notify();
   }
 }
@@ -132,21 +132,23 @@ int main()
   EventLoop* p_loop = loopThread.startLoop();
 
   InetAddress imageServerAddr(image.ip(), 80);
-  {
-    TcpClient imageClient(p_loop, imageServerAddr);
-    imageClient.setConnectionCallBack(onConnetion);
-    imageClient.setMessageCallBack(onMessage);
-    imageClient.start();
+{
+  TcpClient imageClient(p_loop, imageServerAddr);
+  imageClient.setConnectionCallBack(onConnetion);
+  imageClient.setMessageCallBack(onMessage);
+  imageClient.start();
 
+  {
+    std::unique_lock<std::mutex> lock(g_imageMutex);
+    while(!g_downLoadFlag)
     {
-      std::unique_lock<std::mutex> lock(g_imageMutex);
-      while(!g_downLoadFlag)
-      {
-        g_imageCond.wait(lock);
-      }
+      g_imageCond.wait(lock);
     }
   }
+}
   LOG_TRACE << "downloadFile Success, Exit.";
+
+  getchar();
 
   return 0;
 }

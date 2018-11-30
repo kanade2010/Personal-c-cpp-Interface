@@ -26,15 +26,8 @@ public:
 	void loop();
 	void quit();
 
-	void assertInLoopThread()
-	{
-		if(!isInloopThread())
-		{
-			abortNotInLoopThread();
-		}
-	}
-
-	bool isInloopThread() const {return m_threadId == CurrentThread::tid(); }
+	void assertInLoopThread();
+	bool isInloopThread() const;
 
 	void updateChannel(Channel* channel);
   void removeChannel(Channel* channel);

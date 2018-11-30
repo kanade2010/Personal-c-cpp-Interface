@@ -47,11 +47,13 @@ void Connector::startInLoop()
 
 void Connector::stop()
 {
+  LOG_TRACE << "Connector::stop()";
   p_loop->queueInLoop(std::bind(&Connector::stopInLoop, this));
 }
 
 void Connector::stopInLoop()
 {
+  LOG_TRACE << "Connector::stopInLoop()";
   p_loop->assertInLoopThread();
 
   if(m_state == kConnecting)
@@ -136,6 +138,7 @@ void Connector::retry(int sockfd)
 
 int Connector::removeAndResetChannel()
 {
+  LOG_TRACE << "Connector::removeAndResetChannel()";
   p_channel->disableAll();
   p_channel->remove();
 
