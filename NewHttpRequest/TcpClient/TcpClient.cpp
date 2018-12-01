@@ -1,15 +1,24 @@
 #include <assert.h>
 #include <functional>
-
+#include <thread>
 #include "Logger.hh"
 #include "EventLoop.hh"
 #include "SocketHelp.hh"
 #include "TcpClient.hh"
 #include "TcpConnection.hh"
 
+namespace sola
+{
+  void removeConnector(const std::shared_ptr<Connector>& p_connector)
+  {
+    LOG_TRACE << "sola::removeConnector() Connector use_count " << p_connector.use_count();
+    assert(p_connector.unique());
+  }
+};
+
 TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr)
   :p_loop(loop),
-  m_isConnectd(false),
+  m_isConnectorStarted(false),
   m_enRetry(false),
   p_connector(new Connector(loop, serverAddr))
 {
@@ -20,18 +29,14 @@ TcpClient::TcpClient(EventLoop* loop, const InetAddress& serverAddr)
 
 TcpClient::~TcpClient()
 {
-  LOG_TRACE << "dtor[" << this << "]";
-  LOG_TRACE << "TcpConnection use count " << p_connection.use_count();
+  LOG_TRACE << "dtor[" << this << "]" << " TcpConnection use count " << p_connection.use_count();
 
   TcpConnectionPtr conn;
   bool unique = false;
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     unique = p_connection.unique();
-    LOG_TRACE << "TcpConnection use count " << p_connection.use_count() << " unique " << unique;
     conn = p_connection;
-    LOG_TRACE << "TcpConnection use count " << p_connection.use_count() << " unique " << unique;
-
   }
 
   if(conn)
@@ -43,19 +48,27 @@ TcpClient::~TcpClient()
   }
   else
   {
-      p_connector->stop();
+      if(m_isConnectorStarted)
+      {
+        p_connector->stop();
+
+        p_loop->runAfter(1, std::bind(&sola::removeConnector, p_connector));
+      }
   }
+
+  LOG_TRACE << "dtor[" << this << "]" << " End";
 
 }
 
 void TcpClient::start()
 {
-  assert(!m_isConnectd);
+  assert(!m_isConnectorStarted);
   connect();
 }
 
 void TcpClient::connect()
 {
+  m_isConnectorStarted = true;
   p_connector->start();
 }
 
@@ -72,7 +85,7 @@ void TcpClient::disconnect()
 
 void TcpClient::stop()
 {
-  m_isConnectd = false;
+  m_isConnectorStarted = false;
   p_connector->stop();
 }
 
@@ -98,7 +111,6 @@ void TcpClient::newConnetion(int sockfd)
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     p_connection = conn;
-    m_isConnectd = true;
   }
 
   conn->connectEstablished();
@@ -114,7 +126,6 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
     std::lock_guard<std::mutex> lock(m_mutex);
     assert(p_connection  == conn);
     p_connection.reset();
-    m_isConnectd = false;
   }
 
   p_loop->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));

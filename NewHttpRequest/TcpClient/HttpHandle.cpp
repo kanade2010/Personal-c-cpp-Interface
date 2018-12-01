@@ -56,13 +56,14 @@ void HttpResponse::handleHead(const char* buffer, size_t size)
 {
   LOG_TRACE << "HttpResponse::handleHead() " << size << " Bytes :\n" << buffer;
   size_t headSize = 0;
+  size_t endPos = size;
 
   while(!b_haveHandleHead)
   {
     assert(headSize <= size);
-    const char* crlf = std::search(buffer, buffer + size, kCRLF, kCRLF+2);
+    const char* crlf = std::search(buffer, buffer + endPos, kCRLF, kCRLF+2);
 
-    if(crlf == buffer + size)
+    if(crlf == buffer + endPos)
     {
       LOG_FATAL << "HttpResponse::handleHead() error. can't find head end.";
     }
@@ -71,7 +72,7 @@ void HttpResponse::handleHead(const char* buffer, size_t size)
     headSize += lineLength + 2;
     std::string line(buffer, lineLength);
     buffer = buffer + lineLength + 2;
-    size = size - lineLength - 2;
+    endPos = endPos - lineLength - 2;
 
     if(line.size() == 0)
     {
@@ -84,12 +85,12 @@ void HttpResponse::handleHead(const char* buffer, size_t size)
     if(v.size() == 3) { m_code = std::stoi(v[1]); }
     if(v.size() == 2){ m_responseMaps[v[0]] = v[1].erase(0,v[1].find_first_not_of(" ")); }
 
-    LOG_TRACE << "HttpResponse::handleHead() handle one line " << line.size() << " Bytes " << line;
+    LOG_TRACE << "HttpResponse::handleHead() handle one line " << line.size()
+              << " Bytes " << line << " headSize " << headSize << " bufferSize " << size;
   }
 
   m_headSize = headSize;
 
-  LOG_TRACE << "HttpRequest::handleHead() headSize " << m_headSize << " Bytes.";
   LOG_TRACE << "HttpRequest::handleHead() Content-Type : " << m_responseMaps["Content-Type"];
 
 }

@@ -48,13 +48,13 @@ void downloadFileThread(const TcpConnectionPtr& conn, Buffer* buffer, ssize_t le
   buffer->retrieve(buffer->readableBytes());
 
   output.close();
-  
+
   std::unique_lock<std::mutex> lock(g_imageMutex);
 
   if(g_downSize == 155984)
   {
     g_downLoadFlag = true;
-    LOG_TRACE << "downloadFileThread conn use count " << conn.use_count();  
+    conn->forceClose();
     g_imageCond.notify();
   }
 }
@@ -85,7 +85,7 @@ void onConnetion(const TcpConnectionPtr& conn)
   req.setRequestProperty("Content-Type", "application/octet-stream");
   req.setRequestProperty("Connection", "close\r\n");
 
-  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data(); 
+  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data();
 
   conn->send(req.buffer()->data(), req.buffer()->length());
 }
@@ -132,23 +132,25 @@ int main()
   EventLoop* p_loop = loopThread.startLoop();
 
   InetAddress imageServerAddr(image.ip(), 80);
-{
-  TcpClient imageClient(p_loop, imageServerAddr);
-  imageClient.setConnectionCallBack(onConnetion);
-  imageClient.setMessageCallBack(onMessage);
-  imageClient.start();
-
   {
-    std::unique_lock<std::mutex> lock(g_imageMutex);
-    while(!g_downLoadFlag)
+    TcpClient imageClient(p_loop, imageServerAddr);
+    imageClient.setConnectionCallBack(onConnetion);
+    imageClient.setMessageCallBack(onMessage);
+    imageClient.start();
+
     {
-      g_imageCond.wait(lock);
+      std::unique_lock<std::mutex> lock(g_imageMutex);
+      while(!g_downLoadFlag)
+      {
+        g_imageCond.wait(lock);
+      }
     }
+
   }
-}
+
+  std::this_thread::sleep_for(std::chrono::seconds(2));
   LOG_TRACE << "downloadFile Success, Exit.";
 
-  getchar();
 
   return 0;
 }
@@ -192,7 +194,7 @@ void onAppConnetion(const TcpConnectionPtr& conn)
   req.setRequestProperty("Content-Length", std::to_string(kTestContent.size()) + "\r\n");
   req.setRequestBody(kTestContent);
 
-  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data(); 
+  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data();
 
   conn->send(req.buffer()->data(), req.buffer()->length());
 }
@@ -207,7 +209,7 @@ void onMcuConnetion(const TcpConnectionPtr& conn)
   req.setRequestProperty("Content-Type", "application/octet-stream");
   req.setRequestProperty("Connection", "close\r\n");
 
-  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data(); 
+  LOG_TRACE << "send buffer " << req.buffer()->length() << " Bytes : \n" << req.buffer()->data();
 
   conn->send(req.buffer()->data(), req.buffer()->length());
 }

@@ -24,8 +24,6 @@ public:
 
   TcpConnectionPtr connection() const { std::lock_guard<std::mutex> lock(m_mutex); return p_connection; }
 
-  bool isConnected() const { return m_isConnectd; }
-
 private:
   TcpClient(const TcpClient&);
   TcpClient& operator=(const TcpClient&);
@@ -36,9 +34,9 @@ private:
 
   EventLoop* p_loop;
 
-  bool m_isConnectd;
+  bool m_isConnectorStarted;
   bool m_enRetry;
-  std::unique_ptr<Connector> p_connector;
+  std::shared_ptr<Connector> p_connector;
   TcpConnectionPtr p_connection;
   NetCallBacks::ConnectionCallBack m_connectionCallBack;
   NetCallBacks::MessageCallBack m_messageCallBack;

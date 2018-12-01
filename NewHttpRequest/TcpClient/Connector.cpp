@@ -25,7 +25,6 @@ Connector::~Connector()
 
 void Connector::start()
 {
-
   p_loop->runInLoop(std::bind(&Connector::startInLoop, this));
 }
 

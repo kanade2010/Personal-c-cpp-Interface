@@ -91,15 +91,13 @@ void EventLoop::loop()
 
 }
 
-bool EventLoop::isInloopThread() const 
+bool EventLoop::isInloopThread() const
 {
-  LOG_TRACE << "EventLoopThread::isInloopThread()";
   return m_threadId == CurrentThread::tid();
 }
 
 void EventLoop::assertInLoopThread()
 {
-  LOG_TRACE << "EventLoop::assertInLoopThread()";
   if(!isInloopThread())
   {
     abortNotInLoopThread();
