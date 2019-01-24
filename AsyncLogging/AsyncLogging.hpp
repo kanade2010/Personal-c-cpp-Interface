@@ -1,17 +1,19 @@
 #ifndef _ASYNC_LOGGING_HH
 #define _ASYNC_LOGGING_HH
-#include "MutexLock.hh"
-#include "Thread.hh"
-#include "LogStream.hh"
-#include "ptr_vector.hh"
-#include "Condition.hh"
+
 #include <memory>
+#include <mutex>
 #include <string>
+
+#include "Thread.hpp"
+#include "LogStream.hpp"
+#include "ptr_vector.hpp"
+#include "Condition.hpp"
 
 class AsyncLogging
 {
 public:
-	AsyncLogging(const std::string filePath, off_t rollSize, int flushInterval = 3);
+	AsyncLogging(const std::string filePath, off_t rollSize, double flushInterval = 3.0);
 	~AsyncLogging();
 
 	void start(){
@@ -37,12 +39,12 @@ private:
 	typedef myself::ptr_vector<Buffer> BufferVector;
 	typedef std::unique_ptr<Buffer> BufferPtr;
 
-	const int m_flushInterval;
+	const double m_flushInterval;
 	bool m_isRunning;
 	off_t m_rollSize;
 	std::string m_filePath;
 	Thread m_thread;
-	MutexLock m_mutex;
+	std::mutex m_mutex;
 	Condition m_cond;
 
 	BufferPtr m_currentBuffer;

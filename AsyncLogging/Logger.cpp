@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include "TimeStamp.hh"
-#include "Logger.hh"
+#include "TimeStamp.hpp"
+#include "Logger.hpp"
 
 __thread char t_time[64];
 __thread time_t t_lastSecond;
@@ -17,7 +17,7 @@ const char* strerror_tl(int savedErrno)
   return strerror_r(savedErrno, t_errnobuf, sizeof(t_errnobuf));
 }
 
-Logger::LogLevel g_logLevel = Logger::TRACE;
+Logger::LogLevel g_logLevel = Logger::NUM_LOG_LEVELS;
 
 void Logger::setLogLevel(LogLevel level){
 	g_logLevel = level;

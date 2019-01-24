@@ -2,6 +2,7 @@
 #define _TIME_STAMP_HH
 
 #include <stdint.h>
+#include <string>
 
 class TimeStamp {
 public:
@@ -25,25 +26,23 @@ public:
 //
 // Get time of now.
 //
+  std::string toString() const;
+
+  bool valid() const { return m_microSecondsSinceEpoch > 0; }
+
   static TimeStamp now();
-
-  static TimeStamp invalid()
+  static TimeStamp invalid() { return TimeStamp(); }
+  static TimeStamp addTime(TimeStamp timestamp, double seconds)
   {
-    return TimeStamp();
+    int64_t delta = static_cast<int64_t>(seconds * TimeStamp::kMicroSecondsPerSecond);
+    return TimeStamp(timestamp.microSecondsSinceEpoch() + delta);
   }
-
+  
   static const int kMicroSecondsPerSecond = 1000 * 1000;
 
 private:
   int64_t m_microSecondsSinceEpoch;
 };
-
-
-inline TimeStamp addTime(TimeStamp timestamp, double seconds)
-{
-  int64_t delta = static_cast<int64_t>(seconds * TimeStamp::kMicroSecondsPerSecond);
-  return TimeStamp(timestamp.microSecondsSinceEpoch() + delta);
-}
 
 inline bool operator<(TimeStamp lhs, TimeStamp rhs)
 {

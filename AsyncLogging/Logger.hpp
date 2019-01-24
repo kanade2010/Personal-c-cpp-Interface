@@ -2,8 +2,8 @@
 #define _LOGGER_HH
 
 #include <string.h>
-#include "LogStream.hh"
-#include "TimeStamp.hh"
+#include "LogStream.hpp"
+#include "TimeStamp.hpp"
 
 // CAUTION: do not write:
 //
@@ -26,11 +26,16 @@
 	Logger(__FILE__, __LINE__, Logger::DEBUG, __func__).stream()
 #define LOG_INFO if (Logger::logLevel() <= Logger::INFO) \
 	Logger(__FILE__, __LINE__).stream()
-#define LOG_WARN Logger(__FILE__, __LINE__, Logger::WARN).stream()
-#define LOG_ERROR Logger(__FILE__, __LINE__, Logger::ERROR).stream()
-#define LOG_FATAL Logger(__FILE__, __LINE__, Logger::FATAL).stream()
-#define LOG_SYSERR Logger(__FILE__, __LINE__, false).stream()
-#define LOG_SYSFATAL Logger(__FILE__, __LINE__, true).stream()
+#define LOG_WARN if (Logger::logLevel() <= Logger::WARN) \
+	Logger(__FILE__, __LINE__, Logger::WARN).stream()
+#define LOG_ERROR if (Logger::logLevel() <= Logger::ERROR) \
+	Logger(__FILE__, __LINE__, Logger::ERROR).stream()
+#define LOG_FATAL if (Logger::logLevel() <= Logger::FATAL) \
+	Logger(__FILE__, __LINE__, Logger::FATAL).stream()
+#define LOG_SYSERR if (Logger::logLevel() <= Logger::ERROR) \
+	Logger(__FILE__, __LINE__, false).stream()
+#define LOG_SYSFATAL if (Logger::logLevel() <= Logger::FATAL) \
+	Logger(__FILE__, __LINE__, true).stream()
 
 class Logger
 {
@@ -113,5 +118,7 @@ private:
 	Impl m_impl;
 
 };
+
+const char* strerror_tl(int savedErrno);
 
 #endif
