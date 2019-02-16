@@ -10,13 +10,13 @@ int main()
 {
 	MsgCache st;
 
-	st.push("11111111111");
-	st.push("22222222222");
-	st.push("33333333333");
+	st.push("{\"eventTime\":\"\",\"data\":{\"id\":54785,\"type\":\"Undefine\",\"lat\":\"\",\"lon\":\"\",\"trip_sn\":123456781}}");
+	st.push("{\"eventTime\":\"\",\"data\":{\"id\":54785,\"type\":\"Undefine\",\"lat\":\"\",\"lon\":\"\",\"trip_sn\":123456782}}");
+	st.push("{\"eventTime\":\"\",\"data\":{\"id\":54785,\"type\":\"Undefine\",\"lat\":\"\",\"lon\":\"\",\"trip_sn\":123456783}}");
 
 	std::cout << st.pop() << std::endl;
-	std::cout << st.pop() << std::endl;
-	std::cout << st.pop() << std::endl;
+	//std::cout << st.pop() << std::endl;
+	//std::cout << st.pop() << std::endl;
 
 
 
