@@ -1,0 +1,8 @@
+syntax = "proto3";
+package sola; 
+message user_info{
+  uint64 uid = 1;
+  string name = 2;
+  uint64 login_in = 3;
+  uint64 login_out = 4;
+}
