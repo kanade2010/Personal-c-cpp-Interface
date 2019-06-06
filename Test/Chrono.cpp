@@ -3,7 +3,10 @@
 #include <ratio>
 #include <chrono>
 #include <time.h>
-
+#include <iostream>
+#include <vector>
+#include <numeric>
+#include <chrono>
 /*int main ()
 {
   typedef std::chrono::duration<int> seconds_type;
@@ -44,6 +47,7 @@ std::string getCurrentSystemTime()
   return std::string(date);
 }
 
+volatile int sink;
 int main()
 {
   using namespace std::chrono;
@@ -63,5 +67,23 @@ int main()
   std::cout << "duration (in periods): ";
   std::cout << nas.count() << " nanoseconds.\n";
   std::cout << getCurrentSystemTime() << "\n";
+  
+  //high_resolution_clock
+  
+      for (auto size = 1ull; size < 1000000000ull; size *= 100) {
+        // record start time
+        auto start = std::chrono::high_resolution_clock::now();
+        // do some work
+        std::vector<int> v(size, 42);
+        sink = std::accumulate(v.begin(), v.end(), 0u); // make sure it's a side effect
+        // record end time
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> diff = end-start;
+        std::cout << "Time to fill and iterate a vector of " 
+                  << size << " ints : " << diff.count() << " s\n";
+    }
+	
+	
+	
   return 0;
 }
